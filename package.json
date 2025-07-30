@@ -2,17 +2,25 @@
   "name": "bearsistence",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "copyScriptsFolder": "cp -r ./src/scripts ./dist",
+    "dev": "tsc &&  npm run copyScriptsFolder && node ./dist/main.js",
+    "test": "jest ./tests --config ./jest.config.js --runInBand --verbose"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@types/node": "^24.1.0",
+    "@types/jest": "^30.0.0",
     "autobind-decorator": "^2.4.0",
     "chalk": "^4.1.2",
+    "commander": "^14.0.0",
     "inquirer": "^12.8.2",
     "inversify": "^7.6.1",
-    "reflect-metadata": "^0.2.2"
+    "jest": "^30.0.5",
+    "reflect-metadata": "^0.2.2",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2"
   }
 }
