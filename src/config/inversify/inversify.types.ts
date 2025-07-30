@@ -3,6 +3,8 @@ const TYPES = {
   RecordParser: Symbol.for("RecordParser"),
   Prompt: Symbol.for("Prompt"),
   InteractiveMode: Symbol.for("InteractiveMode"),
+  CommandMode: Symbol.for("CommandMode"),
+  Program: Symbol.for("Program"),
 };
 
 export default TYPES;

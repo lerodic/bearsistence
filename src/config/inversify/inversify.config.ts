@@ -4,6 +4,9 @@ import Logger from "../../core/Logger";
 import RecordParser from "../../core/RecordParser";
 import Prompt from "../../core/Prompt";
 import InteractiveMode from "../../core/modes/InteractiveMode";
+import CommandMode from "../../core/modes/CommandMode";
+import { Program } from "../../types";
+import { Command } from "commander";
 
 function setupContainer(): Container {
   const container = new Container();
@@ -15,6 +18,12 @@ function setupContainer(): Container {
   container.bind<Prompt>(TYPES.Prompt).to(Prompt);
 
   container.bind<InteractiveMode>(TYPES.InteractiveMode).to(InteractiveMode);
+
+  container.bind<CommandMode>(TYPES.CommandMode).to(CommandMode);
+
+  container.bind<Program>(TYPES.Program).toDynamicValue(() => {
+    return new Command();
+  });
 
   return container;
 }
