@@ -5,6 +5,8 @@ const TYPES = {
   InteractiveMode: Symbol.for("InteractiveMode"),
   CommandMode: Symbol.for("CommandMode"),
   Program: Symbol.for("Program"),
+  ModeFactory: Symbol.for("ModeFactory"),
+  Bearsistence: Symbol.for("Bearsistence"),
 };
 
 export default TYPES;

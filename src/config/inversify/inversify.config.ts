@@ -7,6 +7,8 @@ import InteractiveMode from "../../core/modes/InteractiveMode";
 import CommandMode from "../../core/modes/CommandMode";
 import { Program } from "../../types";
 import { Command } from "commander";
+import ModeFactory from "../../factories/ModeFactory";
+import Bearsistence from "../../core/Bearsistence";
 
 function setupContainer(): Container {
   const container = new Container();
@@ -24,6 +26,10 @@ function setupContainer(): Container {
   container.bind<Program>(TYPES.Program).toDynamicValue(() => {
     return new Command();
   });
+
+  container.bind<ModeFactory>(TYPES.ModeFactory).to(ModeFactory);
+
+  container.bind<Bearsistence>(TYPES.Bearsistence).to(Bearsistence);
 
   return container;
 }
