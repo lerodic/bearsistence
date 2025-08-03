@@ -11,6 +11,8 @@ export type Program = Command;
 
 export type Action = "schedule" | "status" | "test" | "exit";
 
+export type ScheduleAction = "add" | "list" | "remove" | "clear";
+
 export type ScheduleFrequency = "hourly" | "daily" | "weekly";
 
 export type Day = (typeof DAYS_OF_WEEK)[number];

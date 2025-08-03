@@ -5,6 +5,13 @@ import TYPES from "../../config/inversify/inversify.types";
 import Logger from "../Logger";
 import RecordParser from "../RecordParser";
 import Prompt from "../Prompt";
+import {
+  Action,
+  BackupSchedule,
+  BackupScheduleOptions,
+  ScheduleAction,
+  ScheduleFrequency,
+} from "../../types";
 
 @boundClass
 @injectable()
@@ -25,8 +32,11 @@ class InteractiveMode extends Mode {
     await this.handleAction(action);
   }
 
-  private async handleAction(action: string) {
+  private async handleAction(action: Action) {
     switch (action) {
+      case "schedule":
+        await this.manageSchedules();
+        break;
       case "test":
         await this.testConnection();
         break;
@@ -34,6 +44,64 @@ class InteractiveMode extends Mode {
         this.logger.info("Goodbye!");
         return;
     }
+  }
+
+  private async manageSchedules() {
+    const action = await this.prompt.getScheduleAction();
+
+    await this.handleScheduleAction(action);
+  }
+
+  private async handleScheduleAction(action: ScheduleAction) {
+    switch (action) {
+      case "add":
+        await this.setupSchedule();
+        break;
+    }
+  }
+
+  private async setupSchedule() {
+    const schedule = await this.prepareScheduleCreation();
+
+    await this.addSchedule(schedule);
+  }
+
+  private async prepareScheduleCreation(): Promise<BackupSchedule> {
+    const name = await this.prompt.getScheduleName();
+    const frequency = await this.prompt.getScheduleFrequency();
+    const options = await this.getScheduleCreationOptions(frequency);
+
+    return {
+      name,
+      frequency,
+      options,
+    };
+  }
+
+  private async getScheduleCreationOptions(
+    frequency: ScheduleFrequency
+  ): Promise<BackupScheduleOptions> {
+    const options = await this.getFrequencyRelatedOptions(frequency);
+    options.outputPath = await this.prompt.getOutputPath();
+
+    return options;
+  }
+
+  private async getFrequencyRelatedOptions(frequency: ScheduleFrequency) {
+    const options: BackupScheduleOptions = {};
+
+    switch (frequency) {
+      case "weekly":
+        options.day = await this.prompt.getBackupDayOfWeek();
+      case "daily":
+        options.time = await this.prompt.getBackupTime();
+        break;
+      case "hourly":
+        options.hours = await this.prompt.getBackupInterval();
+        break;
+    }
+
+    return options;
   }
 }
 
