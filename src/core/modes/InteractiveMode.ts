@@ -18,7 +18,7 @@ class InteractiveMode extends Mode {
   }
 
   async run() {
-    this.logger.info("🐻 Welcome to Bearup!\n");
+    this.logger.info("🐻 Welcome to Bearsistence!\n");
 
     const action = await this.prompt.getAction();
 
