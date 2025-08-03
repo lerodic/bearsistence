@@ -1,10 +1,13 @@
 import { boundClass } from "autobind-decorator";
 import Logger from "../Logger";
-import { ScriptExecutionOptions } from "../../types";
+import { BackupSchedule, ScriptExecutionOptions } from "../../types";
 import ScriptRunner from "../ScriptRunner";
 import RecordParser from "../RecordParser";
 import { injectable } from "inversify";
-import SCRIPTS from "../../config/constants";
+import { PLIST_LABEL, PLIST_PATH, SCRIPTS } from "../../config/constants";
+import PlistGenerator from "../PlistGenerator";
+import fs from "fs/promises";
+import { exec } from "child_process";
 
 @boundClass
 @injectable()
@@ -12,6 +15,35 @@ abstract class Mode {
   constructor(protected logger: Logger, protected parser: RecordParser) {}
 
   abstract run(): Promise<void>;
+
+  protected async addSchedule(schedule: BackupSchedule) {
+    const plistContent = new PlistGenerator(PLIST_LABEL).generate(
+      schedule.frequency,
+      schedule
+    );
+    await this.createSchedulePlistFile(plistContent);
+
+    this.loadLaunchDaemon();
+  }
+
+  private async createSchedulePlistFile(content: string) {
+    await fs.writeFile(PLIST_PATH, content, {
+      encoding: "utf-8",
+    });
+  }
+
+  private loadLaunchDaemon() {
+    this.unloadLaunchDaemon();
+
+    exec(`launchctl load ${PLIST_PATH}`);
+    this.logger.success("Backup task scheduled successfully!");
+  }
+
+  private unloadLaunchDaemon() {
+    try {
+      exec(`launchctl unload ${PLIST_PATH}`);
+    } catch {}
+  }
 
   protected async testConnection() {
     try {
@@ -40,6 +72,7 @@ abstract class Mode {
 
   exit() {
     this.logger.info("Goodbye!");
+    process.exit(1);
   }
 }
 
