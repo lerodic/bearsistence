@@ -125,6 +125,23 @@ abstract class Mode {
     this.logger.table(rows);
   }
 
+  protected async deleteSchedule(schedule: string) {
+    try {
+      const plistPath = path.join(
+        os.homedir(),
+        "Library",
+        "LaunchAgents",
+        `${this.generatePlistLabel(schedule)}.plist`
+      );
+
+      await fs.unlink(plistPath);
+      this.scheduleService.remove(schedule);
+      this.logger.success(`Schedule '${schedule} deleted successfully!'`);
+    } catch {
+      this.logger.error(`Failed to delete schedule '${schedule}'`);
+    }
+  }
+
   exit() {
     this.logger.info("Goodbye!");
     process.exit(1);

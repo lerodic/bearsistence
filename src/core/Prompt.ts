@@ -1,7 +1,13 @@
 import { boundClass } from "autobind-decorator";
 import { injectable } from "inversify";
 import inquirer from "inquirer";
-import type { Action, Day, ScheduleAction, ScheduleFrequency } from "../types";
+import type {
+  Action,
+  BackupSchedule,
+  Day,
+  ScheduleAction,
+  ScheduleFrequency,
+} from "../types";
 import path from "path";
 import os from "os";
 import { DAYS_OF_WEEK } from "../config/constants";
@@ -158,6 +164,17 @@ class Prompt {
     });
 
     return outputPath;
+  }
+
+  async getScheduleToRemove(schedules: BackupSchedule[]): Promise<string> {
+    const { schedule } = await inquirer.prompt({
+      type: "list",
+      name: "schedule",
+      message: "Which schedule would you like to delete?",
+      choices: schedules.map((s) => s.name),
+    });
+
+    return schedule;
   }
 }
 

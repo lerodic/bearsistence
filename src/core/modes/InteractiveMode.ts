@@ -62,6 +62,9 @@ class InteractiveMode extends Mode {
       case "list":
         this.listSchedules();
         break;
+      case "remove":
+        this.removeSchedule();
+        break;
     }
   }
 
@@ -107,6 +110,23 @@ class InteractiveMode extends Mode {
     }
 
     return options;
+  }
+
+  private async removeSchedule() {
+    if (!this.doAnySchedulesExist()) {
+      return this.logger.warn("You have not created any schedules yet.");
+    }
+
+    this.listSchedules();
+    const scheduleToRemove = await this.prompt.getScheduleToRemove(
+      this.scheduleService.schedules
+    );
+
+    await this.deleteSchedule(scheduleToRemove);
+  }
+
+  private doAnySchedulesExist(): boolean {
+    return this.scheduleService.schedules.length !== 0;
   }
 }
 
