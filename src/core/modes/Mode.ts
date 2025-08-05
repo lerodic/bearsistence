@@ -1,47 +1,85 @@
 import { boundClass } from "autobind-decorator";
 import Logger from "../Logger";
-import { BackupSchedule, ScriptExecutionOptions } from "../../types";
+import { BackupSchedule, PlistInfo, ScriptExecutionOptions } from "../../types";
 import ScriptRunner from "../ScriptRunner";
 import RecordParser from "../RecordParser";
 import { injectable } from "inversify";
-import { PLIST_LABEL, PLIST_PATH, SCRIPTS } from "../../config/constants";
+import { SCRIPTS } from "../../config/constants";
 import PlistGenerator from "../PlistGenerator";
 import fs from "fs/promises";
 import { exec } from "child_process";
+import path from "path";
+import os from "os";
+import ScheduleService from "../ScheduleService";
 
 @boundClass
 @injectable()
 abstract class Mode {
-  constructor(protected logger: Logger, protected parser: RecordParser) {}
+  constructor(
+    protected logger: Logger,
+    protected parser: RecordParser,
+    protected scheduleService: ScheduleService
+  ) {}
 
   abstract run(): Promise<void>;
 
-  protected async addSchedule(schedule: BackupSchedule) {
-    const plistContent = new PlistGenerator(PLIST_LABEL).generate(
-      schedule.frequency,
-      schedule
-    );
-    await this.createSchedulePlistFile(plistContent);
-
-    this.loadLaunchDaemon();
+  async init() {
+    await this.scheduleService.init();
   }
 
-  private async createSchedulePlistFile(content: string) {
-    await fs.writeFile(PLIST_PATH, content, {
+  protected async addSchedule(schedule: BackupSchedule) {
+    const { path, content } = this.getPlistInfo(schedule);
+
+    await this.createSchedulePlistFile(content, path);
+    const hasScheduleBeenAdded = await this.scheduleService.add(schedule);
+    if (!hasScheduleBeenAdded) {
+      return this.logger.error(
+        `Schedule '${schedule.name}' could not be created.`
+      );
+    }
+
+    this.loadLaunchDaemon(path);
+  }
+
+  private getPlistInfo(schedule: BackupSchedule): PlistInfo {
+    const plistPath = path.join(
+      os.homedir(),
+      "Library",
+      "LaunchAgents",
+      `${this.generatePlistLabel(schedule.name)}.plist`
+    );
+    const plistContent = new PlistGenerator(
+      this.generatePlistLabel(schedule.name)
+    ).generate(schedule.frequency, schedule);
+
+    return {
+      path: plistPath,
+      content: plistContent,
+    };
+  }
+
+  private generatePlistLabel(name: string): string {
+    const normalizedName = name.toLowerCase().replace(" ", "-");
+
+    return `com.bearsistence.${normalizedName}`;
+  }
+
+  private async createSchedulePlistFile(content: string, plistPath: string) {
+    await fs.writeFile(plistPath, content, {
       encoding: "utf-8",
     });
   }
 
-  private loadLaunchDaemon() {
-    this.unloadLaunchDaemon();
+  private loadLaunchDaemon(plistPath: string) {
+    this.unloadLaunchDaemon(plistPath);
 
-    exec(`launchctl load ${PLIST_PATH}`);
+    exec(`launchctl load ${plistPath}`);
     this.logger.success("Backup task scheduled successfully!");
   }
 
-  private unloadLaunchDaemon() {
+  private unloadLaunchDaemon(plistPath: string) {
     try {
-      exec(`launchctl unload ${PLIST_PATH}`);
+      exec(`launchctl unload ${plistPath}`);
     } catch {}
   }
 
@@ -68,6 +106,23 @@ abstract class Mode {
     const rawResult = await scriptRunner.callHandler(options.handler);
 
     return this.parser.parse(rawResult as string, options.defaultValues);
+  }
+
+  protected async listSchedules() {
+    const schedules = this.scheduleService.schedules;
+    if (schedules.length === 0) {
+      return this.logger.info("You haven't set up a schedule yet.");
+    }
+
+    const rows = schedules.map((schedule) => ({
+      name: schedule.name,
+      frequency: schedule.frequency,
+      time: schedule.options.time ?? "-",
+      day: schedule.options.day ?? "-",
+      interval: schedule.options.hours ?? "-",
+    })) as Record<string, any>;
+
+    this.logger.table(rows);
   }
 
   exit() {

@@ -12,6 +12,7 @@ import {
   ScheduleAction,
   ScheduleFrequency,
 } from "../../types";
+import ScheduleService from "../ScheduleService";
 
 @boundClass
 @injectable()
@@ -19,9 +20,10 @@ class InteractiveMode extends Mode {
   constructor(
     @inject(TYPES.Prompt) private prompt: Prompt,
     @inject(TYPES.Logger) logger: Logger,
-    @inject(TYPES.RecordParser) parser: RecordParser
+    @inject(TYPES.RecordParser) parser: RecordParser,
+    @inject(TYPES.ScheduleService) scheduleService: ScheduleService
   ) {
-    super(logger, parser);
+    super(logger, parser, scheduleService);
   }
 
   async run() {
@@ -56,6 +58,9 @@ class InteractiveMode extends Mode {
     switch (action) {
       case "add":
         await this.setupSchedule();
+        break;
+      case "list":
+        this.listSchedules();
         break;
     }
   }

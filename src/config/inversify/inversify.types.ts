@@ -7,6 +7,8 @@ const TYPES = {
   Program: Symbol.for("Program"),
   ModeFactory: Symbol.for("ModeFactory"),
   Bearsistence: Symbol.for("Bearsistence"),
+  ScheduleService: Symbol.for("ScheduleService"),
+  TableService: Symbol.for("TableService"),
 };
 
 export default TYPES;
