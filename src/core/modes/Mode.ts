@@ -59,7 +59,7 @@ abstract class Mode {
   }
 
   private generatePlistLabel(name: string): string {
-    const normalizedName = name.toLowerCase().replace(" ", "-");
+    const normalizedName = name.toLowerCase().replaceAll(" ", "-");
 
     return `com.bearsistence.${normalizedName}`;
   }
@@ -111,7 +111,7 @@ abstract class Mode {
   protected async listSchedules() {
     const schedules = this.scheduleService.schedules;
     if (schedules.length === 0) {
-      return this.logger.info("You haven't set up a schedule yet.");
+      return this.logger.info("You haven't set up any schedules yet.");
     }
 
     const rows = schedules.map((schedule) => ({
