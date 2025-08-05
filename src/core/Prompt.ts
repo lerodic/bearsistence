@@ -176,6 +176,20 @@ class Prompt {
 
     return schedule;
   }
+
+  async getConfirmation(message: string): Promise<boolean> {
+    const { choice } = await inquirer.prompt({
+      type: "list",
+      name: "choice",
+      message,
+      choices: [
+        { name: "Yes", value: true },
+        { name: "No", value: false },
+      ],
+    });
+
+    return choice;
+  }
 }
 
 export default Prompt;

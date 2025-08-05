@@ -60,10 +60,13 @@ class InteractiveMode extends Mode {
         await this.setupSchedule();
         break;
       case "list":
-        this.listSchedules();
+        await this.listSchedules();
         break;
       case "remove":
-        this.removeSchedule();
+        await this.removeSchedule();
+        break;
+      case "clear":
+        await this.removeAllSchedules();
         break;
     }
   }
@@ -127,6 +130,17 @@ class InteractiveMode extends Mode {
 
   private doAnySchedulesExist(): boolean {
     return this.scheduleService.schedules.length !== 0;
+  }
+
+  private async removeAllSchedules() {
+    const isConfirmed = await this.prompt.getConfirmation(
+      "Are you sure you want to remove all schedules? This action is irreversible."
+    );
+    if (!isConfirmed) {
+      return;
+    }
+
+    await this.clearSchedules();
   }
 }
 
