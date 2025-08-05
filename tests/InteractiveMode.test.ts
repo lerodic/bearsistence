@@ -10,6 +10,7 @@ import fs from "fs/promises";
 import { exec } from "child_process";
 import path from "path";
 import ScheduleService from "../src/core/ScheduleService";
+import { listSchedulesFixtures } from "./fixtures/InteractiveMode.fixtures";
 
 jest.mock("fs/promises");
 jest.mock("child_process");
@@ -308,7 +309,36 @@ describe("InteractiveMode", () => {
         );
       });
 
-      describe("action: list", () => {});
+      describe("action: list", () => {
+        it("should log 'You haven't set up a schedule yet.' if there are no schedules yet", async () => {
+          Object.defineProperty(scheduleService, "schedules", {
+            get: jest.fn(() => []),
+          });
+          prompt.getAction.mockResolvedValue("schedule");
+          prompt.getScheduleAction.mockResolvedValue("list");
+
+          await interactiveMode.run();
+
+          expect(logger.info).toHaveBeenCalledWith(
+            "You haven't set up a schedule yet."
+          );
+        });
+
+        it.each(listSchedulesFixtures)(
+          "should defer to 'Logger' for printing table from schedule",
+          async ({ schedules, expected }) => {
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            prompt.getAction.mockResolvedValue("schedule");
+            prompt.getScheduleAction.mockResolvedValue("list");
+
+            await interactiveMode.run();
+
+            expect(logger.table).toHaveBeenCalledWith(expected);
+          }
+        );
+      });
     });
 
     describe("action: test", () => {
