@@ -8,24 +8,35 @@ import { BackupSchedule, Day } from "../src/types";
 import PlistGenerator from "../src/core/PlistGenerator";
 import fs from "fs/promises";
 import { exec } from "child_process";
-import { PLIST_PATH } from "../src/config/constants";
+import path from "path";
+import ScheduleService from "../src/core/ScheduleService";
 
 jest.mock("fs/promises");
 jest.mock("child_process");
+jest.mock("os");
+jest.mock("path");
 jest.mock("../src/core/ScriptRunner");
 jest.mock("../src/core/PlistGenerator");
+
+function getPlistPath(scheduleName: string): string {
+  const name = scheduleName.toLowerCase().replace(" ", "-");
+
+  return `/Users/test/Library/LaunchAgents/com.bearsistence.${name}.plist`;
+}
 
 describe("InteractiveMode", () => {
   let interactiveMode: InteractiveMode;
   let prompt: jest.Mocked<Prompt>;
   let logger: jest.Mocked<Logger>;
   let parser: jest.Mocked<RecordParser>;
+  let scheduleService: jest.Mocked<ScheduleService>;
   let scriptRunner: jest.MockedClass<typeof ScriptRunner>;
   let mockCallHandler: jest.Mock;
   let plistGenerator: jest.MockedClass<typeof PlistGenerator>;
   let mockGenerate: jest.Mock;
   const mockWriteFile = fs.writeFile as jest.Mock;
   const mockExec = exec as unknown as jest.Mock;
+  const mockJoin = path.join as jest.Mock;
   const plistContent = "(* plist content *)";
 
   beforeEach(() => {
@@ -42,14 +53,20 @@ describe("InteractiveMode", () => {
 
     logger = {
       info: jest.fn(),
+      warn: jest.fn(),
       error: jest.fn(),
       success: jest.fn(),
-      warn: jest.fn(),
-    };
+      table: jest.fn(),
+    } as unknown as jest.Mocked<Logger>;
 
     parser = {
       parse: jest.fn(),
     } as unknown as jest.Mocked<RecordParser>;
+
+    scheduleService = {
+      add: jest.fn(),
+      remove: jest.fn(),
+    } as unknown as jest.Mocked<ScheduleService>;
 
     mockCallHandler = jest.fn();
     scriptRunner = ScriptRunner as jest.MockedClass<typeof ScriptRunner>;
@@ -69,7 +86,12 @@ describe("InteractiveMode", () => {
         } as unknown as PlistGenerator)
     );
 
-    interactiveMode = new InteractiveMode(prompt, logger, parser);
+    interactiveMode = new InteractiveMode(
+      prompt,
+      logger,
+      parser,
+      scheduleService
+    );
   });
 
   afterEach(() => {
@@ -79,6 +101,47 @@ describe("InteractiveMode", () => {
   describe("run", () => {
     describe("action: schedule", () => {
       describe("action: add", () => {
+        it.each([
+          {
+            name: "Test schedule",
+            frequency: "daily",
+            options: {
+              time: "02:00",
+              outputPath: "/Users/test/someFolder",
+            },
+          },
+        ] as BackupSchedule[])(
+          "should log an error if schedule can't be created",
+          async ({ name, frequency, options }) => {
+            const plistPath = getPlistPath(name);
+            prompt.getAction.mockResolvedValue("schedule");
+            prompt.getScheduleAction.mockResolvedValue("add");
+            prompt.getScheduleName.mockResolvedValue(name);
+            prompt.getScheduleFrequency.mockResolvedValue(frequency);
+            prompt.getBackupTime.mockResolvedValue(options.time as string);
+            prompt.getOutputPath.mockResolvedValue(
+              options.outputPath as string
+            );
+            mockGenerate.mockReturnValue(plistContent);
+            mockJoin.mockReturnValue(plistPath);
+
+            scheduleService.add.mockResolvedValue(false);
+
+            await interactiveMode.run();
+
+            expect(mockWriteFile).toHaveBeenCalledWith(
+              plistPath,
+              plistContent,
+              {
+                encoding: "utf-8",
+              }
+            );
+            expect(logger.error).toHaveBeenCalledWith(
+              `Schedule '${name}' could not be created.`
+            );
+          }
+        );
+
         it.each([
           {
             name: "Test schedule",
@@ -99,6 +162,7 @@ describe("InteractiveMode", () => {
         ] as BackupSchedule[])(
           "should setup a new daily schedule to backup at $options.time",
           async ({ name, frequency, options }) => {
+            const plistPath = getPlistPath(name);
             prompt.getAction.mockResolvedValue("schedule");
             prompt.getScheduleAction.mockResolvedValue("add");
             prompt.getScheduleName.mockResolvedValue(name);
@@ -108,21 +172,23 @@ describe("InteractiveMode", () => {
               options.outputPath as string
             );
             mockGenerate.mockReturnValue(plistContent);
+            mockJoin.mockReturnValue(plistPath);
+            scheduleService.add.mockResolvedValue(true);
 
             await interactiveMode.run();
 
             expect(mockWriteFile).toHaveBeenCalledWith(
-              PLIST_PATH,
+              plistPath,
               plistContent,
               { encoding: "utf-8" }
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               1,
-              `launchctl unload ${PLIST_PATH}`
+              `launchctl unload ${plistPath}`
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               2,
-              `launchctl load ${PLIST_PATH}`
+              `launchctl load ${plistPath}`
             );
             expect(logger.success).toHaveBeenCalledWith(
               "Backup task scheduled successfully!"
@@ -152,6 +218,7 @@ describe("InteractiveMode", () => {
         ] as BackupSchedule[])(
           "should setup a new weekly schedule to backup every $options.day at $options.time",
           async ({ name, frequency, options }) => {
+            const plistPath = getPlistPath(name);
             prompt.getAction.mockResolvedValue("schedule");
             prompt.getScheduleAction.mockResolvedValue("add");
             prompt.getScheduleName.mockResolvedValue(name);
@@ -162,21 +229,23 @@ describe("InteractiveMode", () => {
               options.outputPath as string
             );
             mockGenerate.mockReturnValue(plistContent);
+            mockJoin.mockReturnValue(plistPath);
+            scheduleService.add.mockResolvedValue(true);
 
             await interactiveMode.run();
 
             expect(mockWriteFile).toHaveBeenCalledWith(
-              PLIST_PATH,
+              plistPath,
               plistContent,
               { encoding: "utf-8" }
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               1,
-              `launchctl unload ${PLIST_PATH}`
+              `launchctl unload ${plistPath}`
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               2,
-              `launchctl load ${PLIST_PATH}`
+              `launchctl load ${plistPath}`
             );
             expect(logger.success).toHaveBeenCalledWith(
               "Backup task scheduled successfully!"
@@ -204,6 +273,7 @@ describe("InteractiveMode", () => {
         ] as BackupSchedule[])(
           "should setup a new schedule to backup every $options.hours hour(s)",
           async ({ name, frequency, options }) => {
+            const plistPath = getPlistPath(name);
             prompt.getAction.mockResolvedValue("schedule");
             prompt.getScheduleAction.mockResolvedValue("add");
             prompt.getScheduleName.mockResolvedValue(name);
@@ -213,21 +283,23 @@ describe("InteractiveMode", () => {
               options.outputPath as string
             );
             mockGenerate.mockReturnValue(plistContent);
+            mockJoin.mockReturnValue(plistPath);
+            scheduleService.add.mockResolvedValue(true);
 
             await interactiveMode.run();
 
             expect(mockWriteFile).toHaveBeenCalledWith(
-              PLIST_PATH,
+              plistPath,
               plistContent,
               { encoding: "utf-8" }
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               1,
-              `launchctl unload ${PLIST_PATH}`
+              `launchctl unload ${plistPath}`
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               2,
-              `launchctl load ${PLIST_PATH}`
+              `launchctl load ${plistPath}`
             );
             expect(logger.success).toHaveBeenCalledWith(
               "Backup task scheduled successfully!"
@@ -235,6 +307,8 @@ describe("InteractiveMode", () => {
           }
         );
       });
+
+      describe("action: list", () => {});
     });
 
     describe("action: test", () => {
