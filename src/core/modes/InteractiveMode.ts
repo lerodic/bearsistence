@@ -59,6 +59,9 @@ class InteractiveMode extends Mode {
       case "add":
         await this.setupSchedule();
         break;
+      case "list":
+        this.listSchedules();
+        break;
     }
   }
 

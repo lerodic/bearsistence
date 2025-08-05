@@ -33,8 +33,9 @@ abstract class Mode {
     await this.createSchedulePlistFile(content, path);
     const hasScheduleBeenAdded = await this.scheduleService.add(schedule);
     if (!hasScheduleBeenAdded) {
-      this.logger.error(`Schedule '${schedule.name}' could not be created.`);
-      return;
+      return this.logger.error(
+        `Schedule '${schedule.name}' could not be created.`
+      );
     }
 
     this.loadLaunchDaemon(path);
@@ -105,6 +106,23 @@ abstract class Mode {
     const rawResult = await scriptRunner.callHandler(options.handler);
 
     return this.parser.parse(rawResult as string, options.defaultValues);
+  }
+
+  protected async listSchedules() {
+    const schedules = this.scheduleService.schedules;
+    if (schedules.length === 0) {
+      return this.logger.info("You haven't set up a schedule yet.");
+    }
+
+    const rows = schedules.map((schedule) => ({
+      name: schedule.name,
+      frequency: schedule.frequency,
+      time: schedule.options.time ?? "-",
+      day: schedule.options.day ?? "-",
+      interval: schedule.options.hours ?? "-",
+    })) as Record<string, any>;
+
+    this.logger.table(rows);
   }
 
   exit() {
