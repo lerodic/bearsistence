@@ -59,7 +59,7 @@ abstract class Mode {
   }
 
   private generatePlistLabel(name: string): string {
-    const normalizedName = name.toLowerCase().replace(" ", "-");
+    const normalizedName = name.toLowerCase().replaceAll(" ", "-");
 
     return `com.bearsistence.${normalizedName}`;
   }
