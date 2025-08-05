@@ -11,6 +11,7 @@ import { exec } from "child_process";
 import path from "path";
 import ScheduleService from "../src/core/ScheduleService";
 import {
+  clearSchedulesFixtures,
   listSchedulesFixtures,
   removeScheduleFixtures,
 } from "./fixtures/InteractiveMode.fixtures";
@@ -55,6 +56,7 @@ describe("InteractiveMode", () => {
       getBackupTime: jest.fn(),
       getBackupInterval: jest.fn(),
       getScheduleToRemove: jest.fn(),
+      getConfirmation: jest.fn(),
     } as unknown as jest.Mocked<Prompt>;
 
     logger = {
@@ -324,8 +326,13 @@ describe("InteractiveMode", () => {
 
           await interactiveMode.run();
 
-          expect(logger.info).toHaveBeenCalledWith(
-            "You haven't set up a schedule yet."
+          expect(logger.info).toHaveBeenNthCalledWith(
+            1,
+            "🐻 Welcome to Bearsistence!\n"
+          );
+          expect(logger.info).toHaveBeenNthCalledWith(
+            2,
+            "You haven't set up any schedules yet."
           );
         });
 
@@ -408,6 +415,73 @@ describe("InteractiveMode", () => {
             );
             expect(scheduleService.remove).not.toHaveBeenCalled();
             expect(logger.success).not.toHaveBeenCalled();
+          }
+        );
+      });
+
+      describe("action: clear", () => {
+        it.each(clearSchedulesFixtures)(
+          "should delete all existing schedules",
+          async ({ schedules }) => {
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            prompt.getAction.mockResolvedValue("schedule");
+            prompt.getScheduleAction.mockResolvedValue("clear");
+            prompt.getConfirmation.mockResolvedValue(true);
+            mockJoin.mockReturnValue("");
+            mockUnlink.mockResolvedValue(undefined);
+
+            await interactiveMode.run();
+
+            schedules.forEach((schedule) => {
+              expect(mockUnlink).toHaveBeenCalled();
+              expect(scheduleService.remove).toHaveBeenCalledWith(
+                schedule.name
+              );
+            });
+            expect(logger.success).toHaveBeenCalledWith(
+              "All schedules removed."
+            );
+          }
+        );
+
+        it.each(clearSchedulesFixtures)(
+          "should not perform any action if user does not confirm deletion",
+          async ({ schedules }) => {
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            prompt.getAction.mockResolvedValue("schedule");
+            prompt.getScheduleAction.mockResolvedValue("clear");
+            prompt.getConfirmation.mockResolvedValue(false);
+
+            await interactiveMode.run();
+
+            expect(logger.success).not.toHaveBeenCalled();
+            expect(logger.error).not.toHaveBeenCalled();
+          }
+        );
+
+        it.each(clearSchedulesFixtures)(
+          "should log error message and abort if any schedule can't be deleted",
+          async ({ schedules }) => {
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            prompt.getAction.mockResolvedValue("schedule");
+            prompt.getScheduleAction.mockResolvedValue("clear");
+            prompt.getConfirmation.mockResolvedValue(true);
+            mockJoin.mockReturnValue("");
+            mockUnlink.mockImplementation(() => {
+              throw new Error();
+            });
+
+            await interactiveMode.run();
+
+            expect(logger.error).toHaveBeenCalledWith(
+              `Failed to delete schedule '${schedules[0].name}. Aborting.'`
+            );
           }
         );
       });

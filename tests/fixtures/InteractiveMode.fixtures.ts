@@ -124,3 +124,19 @@ export const removeScheduleFixtures = [
   name: string;
   schedules: BackupSchedule[];
 }[];
+
+export const clearSchedulesFixtures = [
+  {
+    schedules: [
+      {
+        name: "First schedule",
+        frequency: "daily",
+        options: {
+          time: "02:00",
+        },
+      },
+    ],
+  },
+] as {
+  schedules: BackupSchedule[];
+}[];
