@@ -10,7 +10,10 @@ import fs from "fs/promises";
 import { exec } from "child_process";
 import path from "path";
 import ScheduleService from "../src/core/ScheduleService";
-import { listSchedulesFixtures } from "./fixtures/InteractiveMode.fixtures";
+import {
+  listSchedulesFixtures,
+  removeScheduleFixtures,
+} from "./fixtures/InteractiveMode.fixtures";
 
 jest.mock("fs/promises");
 jest.mock("child_process");
@@ -38,6 +41,7 @@ describe("InteractiveMode", () => {
   const mockWriteFile = fs.writeFile as jest.Mock;
   const mockExec = exec as unknown as jest.Mock;
   const mockJoin = path.join as jest.Mock;
+  const mockUnlink = fs.unlink as jest.Mock;
   const plistContent = "(* plist content *)";
 
   beforeEach(() => {
@@ -50,6 +54,7 @@ describe("InteractiveMode", () => {
       getBackupDayOfWeek: jest.fn(),
       getBackupTime: jest.fn(),
       getBackupInterval: jest.fn(),
+      getScheduleToRemove: jest.fn(),
     } as unknown as jest.Mocked<Prompt>;
 
     logger = {
@@ -336,6 +341,73 @@ describe("InteractiveMode", () => {
             await interactiveMode.run();
 
             expect(logger.table).toHaveBeenCalledWith(expected);
+          }
+        );
+      });
+
+      describe("action: remove", () => {
+        it("should log warning message if no schedules have been created yet", async () => {
+          Object.defineProperty(scheduleService, "schedules", {
+            get: jest.fn(() => []),
+          });
+          prompt.getAction.mockResolvedValue("schedule");
+          prompt.getScheduleAction.mockResolvedValue("remove");
+
+          await interactiveMode.run();
+
+          expect(logger.warn).toHaveBeenCalledWith(
+            "You have not created any schedules yet."
+          );
+        });
+
+        it.each(removeScheduleFixtures)(
+          "should successfully delete schedule '$name'",
+          async ({ name, schedules }) => {
+            const plistPath = `/Users/test/Library/LaunchAgents/com.bearsistence.${name
+              .toLowerCase()
+              .replace(" ", "-")}`;
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            prompt.getAction.mockResolvedValue("schedule");
+            prompt.getScheduleAction.mockResolvedValue("remove");
+            prompt.getScheduleToRemove.mockResolvedValue(name);
+            mockJoin.mockReturnValue(plistPath);
+
+            await interactiveMode.run();
+
+            expect(mockUnlink).toHaveBeenCalledWith(plistPath);
+            expect(scheduleService.remove).toHaveBeenCalledWith(name);
+            expect(logger.success).toHaveBeenCalledWith(
+              `Schedule '${name} deleted successfully!'`
+            );
+          }
+        );
+
+        it.each(removeScheduleFixtures)(
+          "should log error message if deletion of schedule '$name' failed",
+          async ({ name, schedules }) => {
+            const plistPath = `/Users/test/Library/LaunchAgents/com.bearsistence.${name
+              .toLowerCase()
+              .replace(" ", "-")}`;
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            prompt.getAction.mockResolvedValue("schedule");
+            prompt.getScheduleAction.mockResolvedValue("remove");
+            prompt.getScheduleToRemove.mockResolvedValue(name);
+            mockJoin.mockReturnValue(plistPath);
+            mockUnlink.mockImplementation(() => {
+              throw new Error();
+            });
+
+            await interactiveMode.run();
+
+            expect(logger.error).toHaveBeenCalledWith(
+              `Failed to delete schedule '${name}'`
+            );
+            expect(scheduleService.remove).not.toHaveBeenCalled();
+            expect(logger.success).not.toHaveBeenCalled();
           }
         );
       });

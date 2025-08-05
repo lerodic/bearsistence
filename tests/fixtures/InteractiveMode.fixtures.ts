@@ -106,3 +106,21 @@ export const listSchedulesFixtures = [
     ],
   },
 ] as { schedules: BackupSchedule[]; expected: Record<string, any>[] }[];
+
+export const removeScheduleFixtures = [
+  {
+    name: "First schedule",
+    schedules: [
+      {
+        name: "First schedule",
+        frequency: "daily",
+        options: {
+          time: "02:00",
+        },
+      },
+    ],
+  },
+] as {
+  name: string;
+  schedules: BackupSchedule[];
+}[];
