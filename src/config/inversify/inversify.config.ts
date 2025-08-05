@@ -9,6 +9,8 @@ import { Program } from "../../types";
 import { Command } from "commander";
 import ModeFactory from "../../factories/ModeFactory";
 import Bearsistence from "../../core/Bearsistence";
+import ScheduleService from "../../core/ScheduleService";
+import TableService from "../../core/TableService";
 
 function setupContainer(): Container {
   const container = new Container();
@@ -30,6 +32,10 @@ function setupContainer(): Container {
   container.bind<ModeFactory>(TYPES.ModeFactory).to(ModeFactory);
 
   container.bind<Bearsistence>(TYPES.Bearsistence).to(Bearsistence);
+
+  container.bind<ScheduleService>(TYPES.ScheduleService).to(ScheduleService);
+
+  container.bind<TableService>(TYPES.TableService).to(TableService);
 
   return container;
 }
