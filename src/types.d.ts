@@ -47,6 +47,7 @@ export type ScheduleOptions =
   | BackupScheduleOptionsHourly;
 
 export interface PlistInfo {
+  id: string;
   path: string;
   content: string;
 }

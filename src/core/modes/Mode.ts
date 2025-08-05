@@ -28,7 +28,7 @@ abstract class Mode {
   }
 
   protected async addSchedule(schedule: BackupSchedule) {
-    const { path, content } = this.getPlistInfo(schedule);
+    const { id, path, content } = this.getPlistInfo(schedule);
 
     await this.createSchedulePlistFile(content, path);
     const hasScheduleBeenAdded = await this.scheduleService.add(schedule);
@@ -38,21 +38,24 @@ abstract class Mode {
       );
     }
 
-    this.loadLaunchDaemon(path);
+    this.loadLaunchDaemon(id, path);
   }
 
   private getPlistInfo(schedule: BackupSchedule): PlistInfo {
+    const id = this.generatePlistLabel(schedule.name);
     const plistPath = path.join(
       os.homedir(),
       "Library",
       "LaunchAgents",
-      `${this.generatePlistLabel(schedule.name)}.plist`
+      `${id}.plist`
     );
-    const plistContent = new PlistGenerator(
-      this.generatePlistLabel(schedule.name)
-    ).generate(schedule.frequency, schedule);
+    const plistContent = new PlistGenerator(id).generate(
+      schedule.frequency,
+      schedule
+    );
 
     return {
+      id,
       path: plistPath,
       content: plistContent,
     };
@@ -70,16 +73,16 @@ abstract class Mode {
     });
   }
 
-  private loadLaunchDaemon(plistPath: string) {
-    this.unloadLaunchDaemon(plistPath);
+  private loadLaunchDaemon(id: string, plistPath: string) {
+    this.unloadLaunchDaemon(id);
 
     exec(`launchctl load ${plistPath}`);
     this.logger.success("Backup task scheduled successfully!");
   }
 
-  private unloadLaunchDaemon(plistPath: string) {
+  private unloadLaunchDaemon(launchDaemon: string) {
     try {
-      exec(`launchctl unload ${plistPath}`);
+      exec(`launchctl bootout gui/$(id -u)/${launchDaemon}`);
     } catch {}
   }
 
@@ -127,15 +130,11 @@ abstract class Mode {
 
   protected async deleteSchedule(schedule: string) {
     try {
-      const plistPath = path.join(
-        os.homedir(),
-        "Library",
-        "LaunchAgents",
-        `${this.generatePlistLabel(schedule)}.plist`
-      );
+      const id = this.generatePlistLabel(schedule);
 
-      await fs.unlink(plistPath);
-      this.scheduleService.remove(schedule);
+      await this.removeSchedulePlistFile(schedule);
+      await this.scheduleService.remove(schedule);
+      this.unloadLaunchDaemon(id);
       this.logger.success(`Schedule '${schedule} deleted successfully!'`);
     } catch {
       this.logger.error(`Failed to delete schedule '${schedule}'`);
@@ -145,7 +144,7 @@ abstract class Mode {
   protected async clearSchedules() {
     for (const schedule of this.scheduleService.schedules) {
       try {
-        await this.removeSchedulePlistFile(schedule);
+        await this.removeSchedulePlistFile(schedule.name);
         await this.scheduleService.remove(schedule.name);
       } catch {
         return this.logger.error(
@@ -157,12 +156,12 @@ abstract class Mode {
     this.logger.success("All schedules removed.");
   }
 
-  private async removeSchedulePlistFile(schedule: BackupSchedule) {
+  private async removeSchedulePlistFile(schedule: string) {
     const plistPath = path.join(
       os.homedir(),
       "Library",
       "LaunchAgents",
-      `${this.generatePlistLabel(schedule.name)}.plist`
+      `${this.generatePlistLabel(schedule)}.plist`
     );
 
     await fs.unlink(plistPath);
