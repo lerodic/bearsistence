@@ -15,6 +15,7 @@
     "@types/jest": "^30.0.0",
     "autobind-decorator": "^2.4.0",
     "chalk": "^4.1.2",
+    "cli-table3": "^0.6.5",
     "commander": "^14.0.0",
     "inquirer": "^12.8.2",
     "inversify": "^7.6.1",
