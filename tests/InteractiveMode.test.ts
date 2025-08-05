@@ -23,10 +23,14 @@ jest.mock("path");
 jest.mock("../src/core/ScriptRunner");
 jest.mock("../src/core/PlistGenerator");
 
-function getPlistPath(scheduleName: string): string {
-  const name = scheduleName.toLowerCase().replace(" ", "-");
+function getPlistLabel(scheduleName: string): string {
+  return `com.bearsistence.${scheduleName.toLowerCase().replace(" ", "-")}`;
+}
 
-  return `/Users/test/Library/LaunchAgents/com.bearsistence.${name}.plist`;
+function getPlistPath(scheduleName: string): string {
+  const name = getPlistLabel(scheduleName);
+
+  return `/Users/test/Library/LaunchAgents/${name}.plist`;
 }
 
 describe("InteractiveMode", () => {
@@ -170,6 +174,7 @@ describe("InteractiveMode", () => {
         ] as BackupSchedule[])(
           "should setup a new daily schedule to backup at $options.time",
           async ({ name, frequency, options }) => {
+            const plistLabel = getPlistLabel(name);
             const plistPath = getPlistPath(name);
             prompt.getAction.mockResolvedValue("schedule");
             prompt.getScheduleAction.mockResolvedValue("add");
@@ -192,7 +197,7 @@ describe("InteractiveMode", () => {
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               1,
-              `launchctl unload ${plistPath}`
+              `launchctl bootout gui/$(id -u)/${plistLabel}`
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               2,
@@ -226,6 +231,7 @@ describe("InteractiveMode", () => {
         ] as BackupSchedule[])(
           "should setup a new weekly schedule to backup every $options.day at $options.time",
           async ({ name, frequency, options }) => {
+            const plistLabel = getPlistLabel(name);
             const plistPath = getPlistPath(name);
             prompt.getAction.mockResolvedValue("schedule");
             prompt.getScheduleAction.mockResolvedValue("add");
@@ -249,7 +255,7 @@ describe("InteractiveMode", () => {
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               1,
-              `launchctl unload ${plistPath}`
+              `launchctl bootout gui/$(id -u)/${plistLabel}`
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               2,
@@ -281,6 +287,7 @@ describe("InteractiveMode", () => {
         ] as BackupSchedule[])(
           "should setup a new schedule to backup every $options.hours hour(s)",
           async ({ name, frequency, options }) => {
+            const plistLabel = getPlistLabel(name);
             const plistPath = getPlistPath(name);
             prompt.getAction.mockResolvedValue("schedule");
             prompt.getScheduleAction.mockResolvedValue("add");
@@ -303,7 +310,7 @@ describe("InteractiveMode", () => {
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               1,
-              `launchctl unload ${plistPath}`
+              `launchctl bootout gui/$(id -u)/${plistLabel}`
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               2,
