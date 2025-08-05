@@ -11,16 +11,26 @@ import "reflect-metadata";
 import Bearsistence from "../src/core/Bearsistence";
 import Mode from "../src/core/modes/Mode";
 import ModeFactory from "../src/factories/ModeFactory";
+import fs from "fs/promises";
+import path from "path";
+
+jest.mock("fs/promises");
+jest.mock("path");
+jest.mock("os");
 
 describe("Bearsistence", () => {
   let bearsistence: Bearsistence;
-  let modeFactory: ModeFactory;
-  let mode: Mode;
+  let modeFactory: jest.Mocked<ModeFactory>;
+  let mode: jest.Mocked<Mode>;
+  let mockJoin = path.join as jest.Mock;
+  let mockStat = fs.stat as jest.Mock;
 
   beforeEach(() => {
     mode = {
       run: jest.fn(),
-    } as unknown as Mode;
+      init: jest.fn(),
+      exit: jest.fn(),
+    } as unknown as jest.Mocked<Mode>;
 
     modeFactory = {
       createInteractiveMode: jest.fn().mockReturnValueOnce(mode),
@@ -35,6 +45,46 @@ describe("Bearsistence", () => {
   });
 
   describe("run", () => {
+    it("should initialize Bearsistence correctly (existing schedules.json)", async () => {
+      const bearsistenceFolderPath = "Users/test/BearBackup/.bearsistence";
+      const schedulesFilePath =
+        "Users/test/BearBackup/.bearsistence/schedules.json";
+      const mockJoin = jest.spyOn(path, "join");
+      mockJoin.mockReturnValueOnce(bearsistenceFolderPath);
+      mockJoin.mockReturnValueOnce(schedulesFilePath);
+
+      await bearsistence.run();
+
+      expect(fs.mkdir).toHaveBeenCalledWith(bearsistenceFolderPath, {
+        recursive: true,
+      });
+      expect(fs.stat).toHaveBeenCalledWith(schedulesFilePath);
+    });
+
+    it("should initialize Bearsistence correctly (non-existing schedules.json)", async () => {
+      const bearsistenceFolderPath = "Users/test/BearBackup/.bearsistence";
+      const schedulesFilePath =
+        "Users/test/BearBackup/.bearsistence/schedules.json";
+      mockStat.mockImplementation(() => {
+        throw new Error();
+      });
+      mockJoin.mockReturnValueOnce(bearsistenceFolderPath);
+      mockJoin.mockReturnValueOnce(schedulesFilePath);
+      mockJoin.mockReturnValueOnce(schedulesFilePath);
+
+      await bearsistence.run();
+
+      expect(fs.mkdir).toHaveBeenCalledWith(bearsistenceFolderPath, {
+        recursive: true,
+      });
+      expect(fs.stat).toHaveBeenCalledWith(schedulesFilePath);
+      expect(fs.writeFile).toHaveBeenCalledWith(
+        schedulesFilePath,
+        JSON.stringify([]),
+        { encoding: "utf-8" }
+      );
+    });
+
     it.each([
       {
         argv: ["don't", "care", "-doCare"],
@@ -67,6 +117,16 @@ describe("Bearsistence", () => {
 
       expect(modeFactory.createInteractiveMode).toHaveBeenCalled();
       expect(mode.run).toHaveBeenCalled();
+    });
+
+    it("should exit gracefully on error", async () => {
+      mode.run.mockImplementation(() => {
+        throw new Error();
+      });
+
+      await bearsistence.run();
+
+      expect(mode.exit).toHaveBeenCalled();
     });
   });
 });
