@@ -142,6 +142,32 @@ abstract class Mode {
     }
   }
 
+  protected async clearSchedules() {
+    for (const schedule of this.scheduleService.schedules) {
+      try {
+        await this.removeSchedulePlistFile(schedule);
+        await this.scheduleService.remove(schedule.name);
+      } catch {
+        return this.logger.error(
+          `Failed to delete schedule '${schedule.name}. Aborting.'`
+        );
+      }
+    }
+
+    this.logger.success("All schedules removed.");
+  }
+
+  private async removeSchedulePlistFile(schedule: BackupSchedule) {
+    const plistPath = path.join(
+      os.homedir(),
+      "Library",
+      "LaunchAgents",
+      `${this.generatePlistLabel(schedule.name)}.plist`
+    );
+
+    await fs.unlink(plistPath);
+  }
+
   exit() {
     this.logger.info("Goodbye!");
     process.exit(1);
