@@ -101,7 +101,7 @@ describe("ScheduleService", () => {
         mockReadFile.mockResolvedValue(JSON.stringify([...initialSchedules]));
         const mockParse = jest.spyOn(JSON, "parse");
         mockParse.mockReturnValue([...initialSchedules]);
-        mockWriteFile.mockImplementation(() => {
+        mockWriteFile.mockImplementationOnce(() => {
           throw new Error();
         });
         const scheduleService = new ScheduleService([...initialSchedules]);
@@ -110,6 +110,35 @@ describe("ScheduleService", () => {
 
         expect(result).toBe(false);
         expect(scheduleService.schedules).not.toStrictEqual(expected);
+      }
+    );
+
+    it.each(addScheduleFixtures)(
+      "should overwrite already existing schedule and return true",
+      async ({ schedule }) => {
+        const schedulesJsonPath = "/Users/test/.bearsistence/schedules.json";
+        mockJoin.mockReturnValue(schedulesJsonPath);
+        mockReadFile.mockResolvedValue(JSON.stringify([]));
+        const mockParse = jest.spyOn(JSON, "parse");
+        mockParse.mockReturnValueOnce([]);
+        const scheduleService = new ScheduleService([schedule]);
+
+        const result = await scheduleService.add(schedule);
+
+        expect(mockWriteFile).toHaveBeenNthCalledWith(
+          1,
+          schedulesJsonPath,
+          JSON.stringify([]),
+          { encoding: "utf-8" }
+        );
+        expect(mockWriteFile).toHaveBeenNthCalledWith(
+          2,
+          schedulesJsonPath,
+          JSON.stringify([schedule]),
+          { encoding: "utf-8" }
+        );
+        expect(result).toBe(true);
+        expect(scheduleService.schedules).toStrictEqual([schedule]);
       }
     );
   });

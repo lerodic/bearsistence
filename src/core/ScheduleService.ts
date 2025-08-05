@@ -32,11 +32,11 @@ class ScheduleService {
   }
 
   async add(schedule: BackupSchedule): Promise<boolean> {
-    if (this.doesScheduleExist(schedule.name)) {
-      this.remove(schedule.name);
-    }
-
     try {
+      if (this.doesScheduleExist(schedule.name)) {
+        await this.remove(schedule.name);
+      }
+
       await this.saveToLocalFile(schedule);
       this._schedules.push(schedule);
 
@@ -52,19 +52,25 @@ class ScheduleService {
     );
   }
 
-  remove(name: string) {
+  async remove(name: string) {
     this._schedules = this._schedules.filter(
       (schedule) => schedule.name !== name
     );
+
+    await this.overwriteLocalFile(this.schedules);
   }
 
   private async saveToLocalFile(schedule: BackupSchedule) {
     const currentSchedules: BackupSchedule[] = await this.loadFromLocalFile();
     currentSchedules.push(schedule);
 
+    await this.overwriteLocalFile(currentSchedules);
+  }
+
+  private async overwriteLocalFile(schedules: BackupSchedule[]) {
     await fs.writeFile(
       path.join(os.homedir(), ".bearsistence", "schedules.json"),
-      JSON.stringify(currentSchedules),
+      JSON.stringify(schedules),
       { encoding: "utf-8" }
     );
   }
