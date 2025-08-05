@@ -45,3 +45,8 @@ export type ScheduleOptions =
   | BackupScheduleOptionsDaily
   | BackupScheduleOptionsWeekly
   | BackupScheduleOptionsHourly;
+
+export interface PlistInfo {
+  path: string;
+  content: string;
+}
