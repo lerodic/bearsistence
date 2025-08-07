@@ -75,6 +75,13 @@ class CommandMode extends Mode {
       .action(async () => {
         await this.listSchedules();
       });
+
+    scheduleCommand
+      .command("remove <name>")
+      .description("Remove a specific schedule")
+      .action(async (name: string) => {
+        await this.deleteSchedule(name);
+      });
   }
 
   private parseCommand(name: string, cliOptions: CLIOptions): BackupSchedule {
