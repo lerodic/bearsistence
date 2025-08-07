@@ -4,6 +4,8 @@ import fs from "fs/promises";
 import path from "path";
 import {
   addScheduleFixtures,
+  doesScheduleExistFalseFixtures,
+  doesScheduleExistTrueFixtures,
   removeExistingScheduleFixtures,
   removeNonExistingScheduleFixtures,
 } from "./fixtures/ScheduleService.fixtures";
@@ -163,6 +165,30 @@ describe("ScheduleService", () => {
         scheduleService.remove(name);
 
         expect(scheduleService.schedules).toStrictEqual(expected);
+      }
+    );
+  });
+
+  describe("doesScheduleExist", () => {
+    it.each(doesScheduleExistTrueFixtures)(
+      "should return true if schedule '$name' does exist",
+      async ({ name, schedules }) => {
+        const scheduleService = new ScheduleService(schedules);
+
+        const result = scheduleService.doesScheduleExist(name);
+
+        expect(result).toBe(true);
+      }
+    );
+
+    it.each(doesScheduleExistFalseFixtures)(
+      "should return false if schedule '$name' does not exist",
+      async ({ name, schedules }) => {
+        const scheduleService = new ScheduleService(schedules);
+
+        const result = scheduleService.doesScheduleExist(name);
+
+        expect(result).toBe(false);
       }
     );
   });
