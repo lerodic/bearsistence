@@ -253,3 +253,45 @@ export const removeNonExistingScheduleFixtures: {
     ],
   },
 ];
+
+export const clearSchedulesFixtures = [
+  {
+    schedules: [
+      {
+        name: "First schedule",
+        frequency: "daily",
+        options: {
+          time: "02:00",
+        },
+      },
+    ],
+  },
+  {
+    schedules: [
+      {
+        name: "First schedule",
+        frequency: "daily",
+        options: {
+          time: "02:00",
+        },
+      },
+      {
+        name: "Second schedule",
+        frequency: "weekly",
+        options: {
+          time: "02:00",
+          day: "Tuesday",
+        },
+      },
+      {
+        name: "Third schedule",
+        frequency: "daily",
+        options: {
+          time: "10:00",
+        },
+      },
+    ],
+  },
+] as {
+  schedules: BackupSchedule[];
+}[];
