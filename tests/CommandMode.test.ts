@@ -9,6 +9,7 @@ import {
   addDailyScheduleFixtures,
   addHourlyScheduleFixtures,
   addWeeklyScheduleFixtures,
+  clearSchedulesFixtures,
   listSchedulesFixtures,
   removeExistingScheduleFixtures,
   removeNonExistingScheduleFixtures,
@@ -45,11 +46,13 @@ describe("CommandMode", () => {
   let listActionCallback: () => Promise<void>;
   let addActionCallback: (name: string, options: any) => Promise<void>;
   let removeActionCallback: (name: string) => Promise<void>;
+  let clearActionCallback: () => Promise<void>;
   let commandChain: any;
   let scheduleCommandChain: any;
   let addCommandChain: any;
   let listCommandChain: any;
   let removeCommandChain: any;
+  let clearCommandChain: any;
 
   beforeEach(() => {
     commandChain = {
@@ -89,6 +92,15 @@ describe("CommandMode", () => {
       }),
     };
 
+    clearCommandChain = {
+      description: jest.fn().mockReturnThis(),
+      action: jest.fn((cb: () => Promise<void>) => {
+        clearActionCallback = cb;
+
+        return clearCommandChain;
+      }),
+    };
+
     scheduleCommandChain = {
       description: jest.fn().mockReturnThis(),
       command: jest.fn().mockImplementation((commandName: string) => {
@@ -96,6 +108,8 @@ describe("CommandMode", () => {
           return listCommandChain;
         } else if (commandName === "remove <name>") {
           return removeCommandChain;
+        } else if (commandName === "clear") {
+          return clearCommandChain;
         }
 
         return addCommandChain;
@@ -122,6 +136,8 @@ describe("CommandMode", () => {
           const name = args[removeIndex + 1];
 
           await removeActionCallback(name);
+        } else if (args.includes("clear")) {
+          await clearActionCallback();
         } else if (args.includes("add")) {
           const addIndex = args.indexOf("add");
           const name = args[addIndex + 1];
@@ -576,6 +592,62 @@ describe("CommandMode", () => {
             );
             expect(scheduleService.remove).not.toHaveBeenCalled();
             expect(logger.success).not.toHaveBeenCalled();
+          }
+        );
+      });
+
+      describe("command: clear", () => {
+        it.each(clearSchedulesFixtures)(
+          "should log error message and abort if any schedule can't be deleted",
+          async ({ schedules }) => {
+            jest.replaceProperty(process, "argv", [
+              "don't",
+              "care",
+              "schedule",
+              "clear",
+            ]);
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            mockJoin.mockReturnValue("");
+            mockUnlink.mockImplementation(() => {
+              throw new Error();
+            });
+
+            await commandMode.run();
+
+            expect(logger.error).toHaveBeenCalledWith(
+              `Failed to delete schedule '${schedules[0].name}. Aborting.'`
+            );
+          }
+        );
+
+        it.each(clearSchedulesFixtures)(
+          "should delete all existing schedules",
+          async ({ schedules }) => {
+            jest.replaceProperty(process, "argv", [
+              "don't",
+              "care",
+              "schedule",
+              "clear",
+            ]);
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            mockJoin.mockReturnValue("");
+            mockUnlink.mockResolvedValue(undefined);
+
+            await commandMode.run();
+
+            schedules.forEach((schedule) => {
+              expect(mockUnlink).toHaveBeenCalled();
+              expect(scheduleService.remove).toHaveBeenCalledWith(
+                schedule.name
+              );
+            });
+            expect(logger.success).toHaveBeenCalledWith(
+              "All schedules removed."
+            );
           }
         );
       });
