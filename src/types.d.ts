@@ -31,10 +31,12 @@ export interface BackupScheduleOptions {
 }
 
 export type BackupScheduleOptionsDaily = Required<
-  Omit<BackupScheduleOptions, "hours">
+  Omit<BackupScheduleOptions, "hours" | "day">
 >;
 
-export type BackupScheduleOptionsWeekly = Required<BackupScheduleOptions>;
+export type BackupScheduleOptionsWeekly = Required<
+  Omit<BackupScheduleOptions, "hours">
+>;
 
 export type BackupScheduleOptionsHourly = Pick<
   Required<BackupScheduleOptions>,
@@ -50,4 +52,11 @@ export interface PlistInfo {
   id: string;
   path: string;
   content: string;
+}
+
+export interface CLIOptions {
+  daily?: string;
+  weekly?: string;
+  hourly?: number;
+  output?: string;
 }
