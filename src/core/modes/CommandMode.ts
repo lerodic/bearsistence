@@ -68,6 +68,13 @@ class CommandMode extends Mode {
 
         await this.addSchedule(schedule);
       });
+
+    scheduleCommand
+      .command("list")
+      .description("List all active schedules")
+      .action(async () => {
+        await this.listSchedules();
+      });
   }
 
   private parseCommand(name: string, cliOptions: CLIOptions): BackupSchedule {
