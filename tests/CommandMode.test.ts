@@ -9,6 +9,7 @@ import {
   addDailyScheduleFixtures,
   addHourlyScheduleFixtures,
   addWeeklyScheduleFixtures,
+  listSchedulesFixtures,
 } from "./fixtures/Mode.fixtures";
 import { getPlistLabel, getPlistPath } from "./utils/utils";
 import PlistGenerator from "../src/core/PlistGenerator";
@@ -38,16 +39,19 @@ describe("CommandMode", () => {
   const mockJoin = path.join as jest.Mock;
   const plistContent = "(* plist content *)";
   let testActionCallback: () => Promise<void>;
+  let listActionCallback: () => Promise<void>;
   let addActionCallback: (name: string, options: any) => Promise<void>;
   let commandChain: any;
   let scheduleCommandChain: any;
   let addCommandChain: any;
+  let listCommandChain: any;
 
   beforeEach(() => {
     commandChain = {
       description: jest.fn().mockReturnThis(),
       action: jest.fn((cb: () => Promise<void>) => {
         testActionCallback = cb;
+
         return commandChain;
       }),
     };
@@ -57,13 +61,28 @@ describe("CommandMode", () => {
       option: jest.fn().mockReturnThis(),
       action: jest.fn((cb: (name: string, options: any) => Promise<void>) => {
         addActionCallback = cb;
+
         return addCommandChain;
+      }),
+    };
+
+    listCommandChain = {
+      description: jest.fn().mockReturnThis(),
+      action: jest.fn((cb: () => Promise<void>) => {
+        listActionCallback = cb;
+
+        return listCommandChain;
       }),
     };
 
     scheduleCommandChain = {
       description: jest.fn().mockReturnThis(),
-      command: jest.fn().mockReturnValue(addCommandChain),
+      command: jest.fn().mockImplementation((commandName: string) => {
+        if (commandName === "list") {
+          return listCommandChain;
+        }
+        return addCommandChain;
+      }),
     };
 
     program = {
@@ -71,6 +90,7 @@ describe("CommandMode", () => {
         if (commandName === "schedule") {
           return scheduleCommandChain;
         }
+
         return commandChain;
       }),
       parseAsync: jest.fn().mockImplementation(async () => {
@@ -78,6 +98,8 @@ describe("CommandMode", () => {
 
         if (args.includes("test")) {
           await testActionCallback();
+        } else if (args.includes("list")) {
+          await listActionCallback();
         } else if (args.includes("add")) {
           const addIndex = args.indexOf("add");
           const name = args[addIndex + 1];
@@ -409,6 +431,47 @@ describe("CommandMode", () => {
             );
           }
         );
+      });
+
+      describe("command: list", () => {
+        it("should log 'You haven't set up any schedule yet.' if there are no schedules yet", async () => {
+          jest.replaceProperty(process, "argv", [
+            "don't",
+            "care",
+            "schedule",
+            "list",
+          ]);
+          Object.defineProperty(scheduleService, "schedules", {
+            get: jest.fn(() => []),
+          });
+
+          await commandMode.run();
+
+          expect(logger.info).toHaveBeenNthCalledWith(
+            1,
+            "🐻 Welcome to Bearsistence!\n"
+          );
+          expect(logger.info).toHaveBeenNthCalledWith(
+            2,
+            "You haven't set up any schedules yet."
+          );
+        });
+
+        it.each(listSchedulesFixtures)("", async ({ schedules, expected }) => {
+          Object.defineProperty(scheduleService, "schedules", {
+            get: jest.fn(() => schedules),
+          });
+          jest.replaceProperty(process, "argv", [
+            "don't",
+            "care",
+            "schedule",
+            "list",
+          ]);
+
+          await commandMode.run();
+
+          expect(logger.table).toHaveBeenCalledWith(expected);
+        });
       });
     });
   });
