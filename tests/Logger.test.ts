@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import Logger from "../src/core/Logger";
 import chalk from "chalk";
+import TableService from "../src/core/TableService";
 
 jest.mock("chalk", () => {
   const fn = jest.fn((msg) => msg);
@@ -24,9 +25,13 @@ jest.mock("chalk", () => {
 describe("Logger", () => {
   let logger: Logger;
   let log: jest.SpyInstance;
+  let tableService: jest.Mocked<TableService>;
 
   beforeEach(() => {
-    logger = new Logger();
+    tableService = {
+      generate: jest.fn(),
+    };
+    logger = new Logger(tableService);
 
     log = jest.spyOn(console, "log");
     log.mockImplementation();
@@ -86,5 +91,18 @@ describe("Logger", () => {
         expect(log).toHaveBeenCalledWith(chalk.redBright.bold(message));
       }
     );
+  });
+
+  describe("table", () => {
+    it("should print table correctly", () => {
+      const rows: Record<string, any> = {};
+      const table = "(* table *)";
+      tableService.generate.mockReturnValue(table);
+
+      logger.table(rows);
+
+      expect(tableService.generate).toHaveBeenCalledWith(rows);
+      expect(log).toHaveBeenCalledWith(chalk.whiteBright.bold(table));
+    });
   });
 });
