@@ -165,3 +165,91 @@ export const listSchedulesFixtures = [
     ],
   },
 ] as { schedules: BackupSchedule[]; expected: Record<string, any>[] }[];
+
+export const removeExistingScheduleFixtures: {
+  name: string;
+  schedules: BackupSchedule[];
+}[] = [
+  {
+    name: "First schedule",
+    schedules: [
+      {
+        name: "First schedule",
+        frequency: "daily",
+        options: {
+          time: "02:00",
+        },
+      },
+    ],
+  },
+  {
+    name: "Second schedule",
+    schedules: [
+      {
+        name: "First schedule",
+        frequency: "daily",
+        options: {
+          time: "02:00",
+        },
+      },
+      {
+        name: "Second schedule",
+        frequency: "daily",
+        options: {
+          time: "03:00",
+        },
+      },
+      {
+        name: "Third schedule",
+        frequency: "daily",
+        options: {
+          time: "04:00",
+        },
+      },
+    ],
+  },
+];
+
+export const removeNonExistingScheduleFixtures: {
+  name: string;
+  schedules: BackupSchedule[];
+}[] = [
+  {
+    name: "Nope",
+    schedules: [
+      {
+        name: "First schedule",
+        frequency: "daily",
+        options: {
+          time: "02:00",
+        },
+      },
+    ],
+  },
+  {
+    name: "Still nope",
+    schedules: [
+      {
+        name: "First schedule",
+        frequency: "daily",
+        options: {
+          time: "02:00",
+        },
+      },
+      {
+        name: "Second schedule",
+        frequency: "daily",
+        options: {
+          time: "03:00",
+        },
+      },
+      {
+        name: "Third schedule",
+        frequency: "daily",
+        options: {
+          time: "04:00",
+        },
+      },
+    ],
+  },
+];

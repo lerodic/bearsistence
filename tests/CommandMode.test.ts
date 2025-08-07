@@ -10,6 +10,8 @@ import {
   addHourlyScheduleFixtures,
   addWeeklyScheduleFixtures,
   listSchedulesFixtures,
+  removeExistingScheduleFixtures,
+  removeNonExistingScheduleFixtures,
 } from "./fixtures/Mode.fixtures";
 import { getPlistLabel, getPlistPath } from "./utils/utils";
 import PlistGenerator from "../src/core/PlistGenerator";
@@ -37,14 +39,17 @@ describe("CommandMode", () => {
   const mockWriteFile = fs.writeFile as jest.Mock;
   const mockExec = exec as unknown as jest.Mock;
   const mockJoin = path.join as jest.Mock;
+  const mockUnlink = fs.unlink as jest.Mock;
   const plistContent = "(* plist content *)";
   let testActionCallback: () => Promise<void>;
   let listActionCallback: () => Promise<void>;
   let addActionCallback: (name: string, options: any) => Promise<void>;
+  let removeActionCallback: (name: string) => Promise<void>;
   let commandChain: any;
   let scheduleCommandChain: any;
   let addCommandChain: any;
   let listCommandChain: any;
+  let removeCommandChain: any;
 
   beforeEach(() => {
     commandChain = {
@@ -75,12 +80,24 @@ describe("CommandMode", () => {
       }),
     };
 
+    removeCommandChain = {
+      description: jest.fn().mockReturnThis(),
+      action: jest.fn((cb: (name: string) => Promise<void>) => {
+        removeActionCallback = cb;
+
+        return listCommandChain;
+      }),
+    };
+
     scheduleCommandChain = {
       description: jest.fn().mockReturnThis(),
       command: jest.fn().mockImplementation((commandName: string) => {
         if (commandName === "list") {
           return listCommandChain;
+        } else if (commandName === "remove <name>") {
+          return removeCommandChain;
         }
+
         return addCommandChain;
       }),
     };
@@ -100,6 +117,11 @@ describe("CommandMode", () => {
           await testActionCallback();
         } else if (args.includes("list")) {
           await listActionCallback();
+        } else if (args.includes("remove")) {
+          const removeIndex = args.indexOf("remove");
+          const name = args[removeIndex + 1];
+
+          await removeActionCallback(name);
         } else if (args.includes("add")) {
           const addIndex = args.indexOf("add");
           const name = args[addIndex + 1];
@@ -146,6 +168,7 @@ describe("CommandMode", () => {
       init: jest.fn(),
       add: jest.fn(),
       remove: jest.fn(),
+      doesScheduleExist: jest.fn(),
     } as unknown as jest.Mocked<ScheduleService>;
 
     parser = {
@@ -457,21 +480,104 @@ describe("CommandMode", () => {
           );
         });
 
-        it.each(listSchedulesFixtures)("", async ({ schedules, expected }) => {
-          Object.defineProperty(scheduleService, "schedules", {
-            get: jest.fn(() => schedules),
-          });
-          jest.replaceProperty(process, "argv", [
-            "don't",
-            "care",
-            "schedule",
-            "list",
-          ]);
+        it.each(listSchedulesFixtures)(
+          "should defer to 'Logger' for printing table from schedule",
+          async ({ schedules, expected }) => {
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            jest.replaceProperty(process, "argv", [
+              "don't",
+              "care",
+              "schedule",
+              "list",
+            ]);
 
-          await commandMode.run();
+            await commandMode.run();
 
-          expect(logger.table).toHaveBeenCalledWith(expected);
-        });
+            expect(logger.table).toHaveBeenCalledWith(expected);
+          }
+        );
+      });
+
+      describe("command: remove", () => {
+        it.each(removeNonExistingScheduleFixtures)(
+          "should log 'Schedule '$name' does not exist.' if schedule does not exist",
+          async ({ name, schedules }) => {
+            jest.replaceProperty(process, "argv", [
+              "don't",
+              "care",
+              "schedule",
+              "remove",
+              name,
+            ]);
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            scheduleService.doesScheduleExist.mockReturnValue(false);
+
+            await commandMode.run();
+
+            expect(logger.error).toHaveBeenCalledWith(
+              `Schedule '${name}' does not exist.`
+            );
+          }
+        );
+
+        it.each(removeExistingScheduleFixtures)(
+          "should successfully delete schedule '$name'",
+          async ({ name, schedules }) => {
+            const plistPath = getPlistPath(name);
+            jest.replaceProperty(process, "argv", [
+              "don't",
+              "care",
+              "schedule",
+              "remove",
+              name,
+            ]);
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            mockJoin.mockReturnValue(plistPath);
+            scheduleService.doesScheduleExist.mockReturnValue(true);
+
+            await commandMode.run();
+
+            expect(mockUnlink).toHaveBeenCalledWith(plistPath);
+            expect(scheduleService.remove).toHaveBeenCalledWith(name);
+            expect(logger.success).toHaveBeenCalledWith(
+              `Schedule '${name} deleted successfully!'`
+            );
+          }
+        );
+
+        it.each(removeExistingScheduleFixtures)(
+          "should log an error message on error",
+          async ({ name, schedules }) => {
+            jest.replaceProperty(process, "argv", [
+              "don't",
+              "care",
+              "schedule",
+              "remove",
+              name,
+            ]);
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            scheduleService.doesScheduleExist.mockReturnValue(true);
+            mockJoin.mockImplementation(() => {
+              throw new Error();
+            });
+
+            await commandMode.run();
+
+            expect(logger.error).toHaveBeenCalledWith(
+              `Failed to delete schedule '${name}'`
+            );
+            expect(scheduleService.remove).not.toHaveBeenCalled();
+            expect(logger.success).not.toHaveBeenCalled();
+          }
+        );
       });
     });
   });

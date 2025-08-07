@@ -129,6 +129,10 @@ abstract class Mode {
   }
 
   protected async deleteSchedule(schedule: string) {
+    if (!this.scheduleService.doesScheduleExist(schedule)) {
+      return this.logger.error(`Schedule '${schedule}' does not exist.`);
+    }
+
     try {
       const id = this.generatePlistLabel(schedule);
 
