@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "copyScriptsFolder": "cp -r ./src/scripts ./dist",
-    "dev": "tsc &&  npm run copyScriptsFolder && node ./dist/main.js",
+    "build": "tsc && npm run copyScriptsFolder",
+    "dev": "npm run build && node ./dist/main.js",
+    "start": "node ./dist/main.js",
     "test": "jest ./tests --config ./jest.config.js --runInBand --verbose"
   },
   "keywords": [],
