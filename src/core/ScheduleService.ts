@@ -46,7 +46,7 @@ class ScheduleService {
     }
   }
 
-  private doesScheduleExist(name: string): boolean {
+  doesScheduleExist(name: string): boolean {
     return (
       this._schedules.find((schedule) => schedule.name === name) !== undefined
     );
