@@ -32,8 +32,6 @@ class CommandMode extends Mode {
   }
 
   async run() {
-    this.logger.info("🐻 Welcome to Bearsistence!\n");
-
     await this.program.parseAsync(process.argv);
   }
 

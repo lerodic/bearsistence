@@ -251,12 +251,7 @@ describe("CommandMode", () => {
 
         await commandMode.run();
 
-        expect(logger.info).toHaveBeenNthCalledWith(
-          1,
-          "🐻 Welcome to Bearsistence!\n"
-        );
-        expect(logger.info).toHaveBeenNthCalledWith(
-          2,
+        expect(logger.info).toHaveBeenCalledWith(
           "Testing Bear Notes connection..."
         );
         expect(logger.success).toHaveBeenCalledWith(
@@ -277,12 +272,7 @@ describe("CommandMode", () => {
 
         await commandMode.run();
 
-        expect(logger.info).toHaveBeenNthCalledWith(
-          1,
-          "🐻 Welcome to Bearsistence!\n"
-        );
-        expect(logger.info).toHaveBeenNthCalledWith(
-          2,
+        expect(logger.info).toHaveBeenCalledWith(
           "Testing Bear Notes connection..."
         );
         expect(logger.error).toHaveBeenCalledWith(
@@ -298,12 +288,7 @@ describe("CommandMode", () => {
 
         await commandMode.run();
 
-        expect(logger.info).toHaveBeenNthCalledWith(
-          1,
-          "🐻 Welcome to Bearsistence!\n"
-        );
-        expect(logger.info).toHaveBeenNthCalledWith(
-          2,
+        expect(logger.info).toHaveBeenCalledWith(
           "Testing Bear Notes connection..."
         );
         expect(logger.error).toHaveBeenCalledWith(
@@ -486,12 +471,7 @@ describe("CommandMode", () => {
 
           await commandMode.run();
 
-          expect(logger.info).toHaveBeenNthCalledWith(
-            1,
-            "🐻 Welcome to Bearsistence!\n"
-          );
-          expect(logger.info).toHaveBeenNthCalledWith(
-            2,
+          expect(logger.info).toHaveBeenCalledWith(
             "You haven't set up any schedules yet."
           );
         });
