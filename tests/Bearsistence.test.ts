@@ -33,9 +33,10 @@ describe("Bearsistence", () => {
     } as unknown as jest.Mocked<Mode>;
 
     modeFactory = {
-      createInteractiveMode: jest.fn().mockReturnValueOnce(mode),
-      createCommandMode: jest.fn().mockReturnValueOnce(mode),
-    };
+      create: jest.fn(),
+      createCommandMode: jest.fn(),
+      createInteractiveMode: jest.fn(),
+    } as unknown as jest.Mocked<ModeFactory>;
 
     bearsistence = new Bearsistence(modeFactory);
   });
@@ -105,7 +106,7 @@ describe("Bearsistence", () => {
 
         await bearsistence.run();
 
-        expect(modeFactory.createCommandMode).toHaveBeenCalled();
+        expect((modeFactory as any).createCommandMode).toHaveBeenCalled();
         expect(mode.run).toHaveBeenCalled();
       }
     );
@@ -115,7 +116,7 @@ describe("Bearsistence", () => {
 
       await bearsistence.run();
 
-      expect(modeFactory.createInteractiveMode).toHaveBeenCalled();
+      expect((modeFactory as any).createInteractiveMode).toHaveBeenCalled();
       expect(mode.run).toHaveBeenCalled();
     });
 
