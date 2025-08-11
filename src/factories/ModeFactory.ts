@@ -9,11 +9,23 @@ import CommandMode from "../core/modes/CommandMode";
 @boundClass
 @injectable()
 class ModeFactory {
-  createInteractiveMode(): Mode {
+  create(): Mode {
+    return this.shouldUseInteractiveMode()
+      ? this.createInteractiveMode()
+      : this.createCommandMode();
+  }
+
+  private shouldUseInteractiveMode(): boolean {
+    const args = process.argv.slice(2);
+
+    return args.length === 0;
+  }
+
+  private createInteractiveMode(): Mode {
     return container.get<InteractiveMode>(TYPES.InteractiveMode);
   }
 
-  createCommandMode(): Mode {
+  private createCommandMode(): Mode {
     return container.get<CommandMode>(TYPES.CommandMode);
   }
 }
