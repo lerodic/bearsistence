@@ -27,8 +27,16 @@ class InteractiveMode extends Mode {
   }
 
   async run() {
-    this.logger.info("🐻 Welcome to Bearsistence!\n");
+    this.greet();
 
+    await this.processNextAction();
+  }
+
+  private greet() {
+    this.logger.info("🐻 Welcome to Bearsistence!\n");
+  }
+
+  private async processNextAction() {
     const action = await this.prompt.getAction();
 
     await this.handleAction(action);
@@ -46,6 +54,15 @@ class InteractiveMode extends Mode {
         this.logger.info("Goodbye!");
         return;
     }
+
+    await this.shouldContinue();
+  }
+
+  private async shouldContinue() {
+    const shouldContinue = await this.prompt.shouldContinue();
+    if (!shouldContinue) return;
+
+    await this.processNextAction();
   }
 
   private async manageSchedules() {
