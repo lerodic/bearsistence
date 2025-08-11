@@ -31,7 +31,7 @@ describe("ScriptRunner", () => {
     ])(
       "should append call to '$handlerName' to '$scriptName' and execute the script",
       async ({ scriptName, handlerName, args }) => {
-        const scriptRunner = new ScriptRunner(scriptName);
+        scriptRunner = new ScriptRunner(scriptName);
         mockReadFile.mockResolvedValue(scriptContent);
         mockExec.mockImplementation((cmd, callback) => {
           callback(null, "result", "");
@@ -58,7 +58,7 @@ describe("ScriptRunner", () => {
       mockExec.mockImplementation((cmd, cb) =>
         cb(new Error("failed"), "", "stderr")
       );
-      const scriptRunner = new ScriptRunner("malfunctioningScript");
+      scriptRunner = new ScriptRunner("malfunctioningScript");
 
       await expect(scriptRunner.callHandler("shouldThrow")).rejects.toEqual(
         "stderr"
@@ -66,7 +66,7 @@ describe("ScriptRunner", () => {
     });
 
     it("should throw an error if call to handler failed", async () => {
-      const scriptRunner = new ScriptRunner("somePath");
+      scriptRunner = new ScriptRunner("somePath");
       (fs.readFile as jest.Mock).mockImplementation(async () => {
         throw new Error();
       });
