@@ -33,9 +33,9 @@ describe("Bearsistence", () => {
     } as unknown as jest.Mocked<Mode>;
 
     modeFactory = {
-      create: jest.fn(),
-      createCommandMode: jest.fn(),
-      createInteractiveMode: jest.fn(),
+      create: jest.fn().mockReturnValue(mode),
+      createCommandMode: jest.fn().mockReturnValue(mode),
+      createInteractiveMode: jest.fn().mockReturnValue(mode),
     } as unknown as jest.Mocked<ModeFactory>;
 
     bearsistence = new Bearsistence(modeFactory);
@@ -102,6 +102,9 @@ describe("Bearsistence", () => {
     ])(
       "should run in command mode if arguments have been passed to program",
       async ({ argv }) => {
+        modeFactory.create.mockImplementation(() => {
+          return (modeFactory as any).createCommandMode();
+        });
         jest.replaceProperty(process, "argv", argv);
 
         await bearsistence.run();
@@ -112,6 +115,9 @@ describe("Bearsistence", () => {
     );
 
     it("should run in inveractive mode if no arguments have been passed to program", async () => {
+      modeFactory.create.mockImplementation(() => {
+        return (modeFactory as any).createInteractiveMode();
+      });
       jest.replaceProperty(process, "argv", ["totally", "irrelevant"]);
 
       await bearsistence.run();
