@@ -2,7 +2,6 @@ import { boundClass } from "autobind-decorator";
 import { inject, injectable } from "inversify";
 import TYPES from "../config/inversify/inversify.types";
 import ModeFactory from "../factories/ModeFactory";
-import Mode from "./modes/Mode";
 import fs from "fs/promises";
 import path from "path";
 import os from "os";
@@ -14,14 +13,7 @@ class Bearsistence {
 
   async run() {
     await this.init();
-    const mode = this.getCorrectMode();
-
-    try {
-      await mode.init();
-      await mode.run();
-    } catch {
-      mode.exit();
-    }
+    await this.runMode();
   }
 
   private async init() {
@@ -49,16 +41,15 @@ class Bearsistence {
     }
   }
 
-  private getCorrectMode(): Mode {
-    return this.shouldUseInteractiveMode()
-      ? this.modeFactory.createInteractiveMode()
-      : this.modeFactory.createCommandMode();
-  }
+  private async runMode() {
+    const mode = this.modeFactory.create();
 
-  private shouldUseInteractiveMode(): boolean {
-    const args = process.argv.slice(2);
-
-    return args.length === 0;
+    try {
+      await mode.init();
+      await mode.run();
+    } catch {
+      mode.exit();
+    }
   }
 }
 
