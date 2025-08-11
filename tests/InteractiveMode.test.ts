@@ -4,17 +4,22 @@ import Prompt from "../src/core/Prompt";
 import Logger from "../src/core/Logger";
 import RecordParser from "../src/core/RecordParser";
 import ScriptRunner from "../src/core/ScriptRunner";
-import { BackupSchedule, Day } from "../src/types";
+import { Day } from "../src/types";
 import PlistGenerator from "../src/core/PlistGenerator";
 import fs from "fs/promises";
 import { exec } from "child_process";
 import path from "path";
 import ScheduleService from "../src/core/ScheduleService";
 import {
-  clearSchedulesFixtures,
+  addDailyScheduleFixtures,
+  addHourlyScheduleFixtures,
+  addWeeklyScheduleFixtures,
   listSchedulesFixtures,
-  removeScheduleFixtures,
-} from "./fixtures/InteractiveMode.fixtures";
+  removeExistingScheduleFixtures,
+  removeNonExistingScheduleFixtures,
+  clearSchedulesFixtures,
+} from "./fixtures/Mode.fixtures";
+import { getPlistLabel, getPlistPath } from "./utils/utils";
 
 jest.mock("fs/promises");
 jest.mock("child_process");
@@ -22,16 +27,6 @@ jest.mock("os");
 jest.mock("path");
 jest.mock("../src/core/ScriptRunner");
 jest.mock("../src/core/PlistGenerator");
-
-function getPlistLabel(scheduleName: string): string {
-  return `com.bearsistence.${scheduleName.toLowerCase().replace(" ", "-")}`;
-}
-
-function getPlistPath(scheduleName: string): string {
-  const name = getPlistLabel(scheduleName);
-
-  return `/Users/test/Library/LaunchAgents/${name}.plist`;
-}
 
 describe("InteractiveMode", () => {
   let interactiveMode: InteractiveMode;
@@ -61,6 +56,7 @@ describe("InteractiveMode", () => {
       getBackupInterval: jest.fn(),
       getScheduleToRemove: jest.fn(),
       getConfirmation: jest.fn(),
+      shouldContinue: jest.fn().mockReturnValue(false),
     } as unknown as jest.Mocked<Prompt>;
 
     logger = {
@@ -76,8 +72,10 @@ describe("InteractiveMode", () => {
     } as unknown as jest.Mocked<RecordParser>;
 
     scheduleService = {
+      init: jest.fn(),
       add: jest.fn(),
       remove: jest.fn(),
+      doesScheduleExist: jest.fn(),
     } as unknown as jest.Mocked<ScheduleService>;
 
     mockCallHandler = jest.fn();
@@ -111,18 +109,46 @@ describe("InteractiveMode", () => {
   });
 
   describe("run", () => {
+    describe("continous execution loop", () => {
+      it("should keep program alive for as long as user wants to perform another action", async () => {
+        prompt.getAction.mockResolvedValue("test");
+        prompt.shouldContinue.mockResolvedValueOnce(true);
+        prompt.shouldContinue.mockResolvedValueOnce(false);
+        mockCallHandler.mockResolvedValueOnce(
+          'isRunning:true, isResponsive:true, errorMessage:""'
+        );
+        parser.parse.mockReturnValueOnce({
+          isRunning: true,
+          isResponsive: true,
+          errorMessage: "",
+        });
+
+        await interactiveMode.run();
+
+        expect(prompt.getAction).toHaveBeenCalledTimes(2);
+      });
+
+      it("should exit if user denies performing another action", async () => {
+        prompt.getAction.mockResolvedValue("test");
+        prompt.shouldContinue.mockResolvedValueOnce(false);
+        mockCallHandler.mockResolvedValueOnce(
+          'isRunning:true, isResponsive:true, errorMessage:""'
+        );
+        parser.parse.mockReturnValueOnce({
+          isRunning: true,
+          isResponsive: true,
+          errorMessage: "",
+        });
+
+        await interactiveMode.run();
+
+        expect(prompt.getAction).toHaveBeenCalledTimes(1);
+      });
+    });
+
     describe("action: schedule", () => {
       describe("action: add", () => {
-        it.each([
-          {
-            name: "Test schedule",
-            frequency: "daily",
-            options: {
-              time: "02:00",
-              outputPath: "/Users/test/someFolder",
-            },
-          },
-        ] as BackupSchedule[])(
+        it.each(addDailyScheduleFixtures)(
           "should log an error if schedule can't be created",
           async ({ name, frequency, options }) => {
             const plistPath = getPlistPath(name);
@@ -136,7 +162,6 @@ describe("InteractiveMode", () => {
             );
             mockGenerate.mockReturnValue(plistContent);
             mockJoin.mockReturnValue(plistPath);
-
             scheduleService.add.mockResolvedValue(false);
 
             await interactiveMode.run();
@@ -154,24 +179,7 @@ describe("InteractiveMode", () => {
           }
         );
 
-        it.each([
-          {
-            name: "Test schedule",
-            frequency: "daily",
-            options: {
-              time: "02:00",
-              outputPath: "/Users/test/someFolder",
-            },
-          },
-          {
-            name: "Test schedule",
-            frequency: "daily",
-            options: {
-              time: "13:01",
-              outputPath: "/Users/test/someFolder",
-            },
-          },
-        ] as BackupSchedule[])(
+        it.each(addDailyScheduleFixtures)(
           "should setup a new daily schedule to backup at $options.time",
           async ({ name, frequency, options }) => {
             const plistLabel = getPlistLabel(name);
@@ -209,26 +217,7 @@ describe("InteractiveMode", () => {
           }
         );
 
-        it.each([
-          {
-            name: "Test schedule",
-            frequency: "weekly",
-            options: {
-              day: "Monday",
-              time: "02:00",
-              outputPath: "/Users/test/someFolder",
-            },
-          },
-          {
-            name: "Test schedule",
-            frequency: "weekly",
-            options: {
-              day: "Friday",
-              time: "19:35",
-              outputPath: "/Users/test/someFolder",
-            },
-          },
-        ] as BackupSchedule[])(
+        it.each(addWeeklyScheduleFixtures)(
           "should setup a new weekly schedule to backup every $options.day at $options.time",
           async ({ name, frequency, options }) => {
             const plistLabel = getPlistLabel(name);
@@ -267,24 +256,7 @@ describe("InteractiveMode", () => {
           }
         );
 
-        it.each([
-          {
-            name: "Test schedule",
-            frequency: "hourly",
-            options: {
-              hours: 12,
-              outputPath: "/Users/test/someFolder",
-            },
-          },
-          {
-            name: "Test schedule",
-            frequency: "hourly",
-            options: {
-              hours: 3,
-              outputPath: "/Users/test/someFolder",
-            },
-          },
-        ] as BackupSchedule[])(
+        it.each(addHourlyScheduleFixtures)(
           "should setup a new schedule to backup every $options.hours hour(s)",
           async ({ name, frequency, options }) => {
             const plistLabel = getPlistLabel(name);
@@ -324,7 +296,7 @@ describe("InteractiveMode", () => {
       });
 
       describe("action: list", () => {
-        it("should log 'You haven't set up a schedule yet.' if there are no schedules yet", async () => {
+        it("should log 'You haven't set up any schedules yet.' if there are no schedules yet", async () => {
           Object.defineProperty(scheduleService, "schedules", {
             get: jest.fn(() => []),
           });
@@ -374,12 +346,10 @@ describe("InteractiveMode", () => {
           );
         });
 
-        it.each(removeScheduleFixtures)(
+        it.each(removeExistingScheduleFixtures)(
           "should successfully delete schedule '$name'",
           async ({ name, schedules }) => {
-            const plistPath = `/Users/test/Library/LaunchAgents/com.bearsistence.${name
-              .toLowerCase()
-              .replace(" ", "-")}`;
+            const plistPath = getPlistPath(name);
             Object.defineProperty(scheduleService, "schedules", {
               get: jest.fn(() => schedules),
             });
@@ -387,6 +357,7 @@ describe("InteractiveMode", () => {
             prompt.getScheduleAction.mockResolvedValue("remove");
             prompt.getScheduleToRemove.mockResolvedValue(name);
             mockJoin.mockReturnValue(plistPath);
+            scheduleService.doesScheduleExist.mockReturnValue(true);
 
             await interactiveMode.run();
 
@@ -398,12 +369,10 @@ describe("InteractiveMode", () => {
           }
         );
 
-        it.each(removeScheduleFixtures)(
-          "should log error message if deletion of schedule '$name' failed",
+        it.each(removeNonExistingScheduleFixtures)(
+          "should log 'Schedule '$name' does not exist.' if schedule does not exist",
           async ({ name, schedules }) => {
-            const plistPath = `/Users/test/Library/LaunchAgents/com.bearsistence.${name
-              .toLowerCase()
-              .replace(" ", "-")}`;
+            const plistPath = getPlistPath(name);
             Object.defineProperty(scheduleService, "schedules", {
               get: jest.fn(() => schedules),
             });
@@ -411,6 +380,28 @@ describe("InteractiveMode", () => {
             prompt.getScheduleAction.mockResolvedValue("remove");
             prompt.getScheduleToRemove.mockResolvedValue(name);
             mockJoin.mockReturnValue(plistPath);
+            scheduleService.doesScheduleExist.mockReturnValue(false);
+
+            await interactiveMode.run();
+
+            expect(logger.error).toHaveBeenCalledWith(
+              `Schedule '${name}' does not exist.`
+            );
+          }
+        );
+
+        it.each(removeExistingScheduleFixtures)(
+          "should log error message if deletion of schedule '$name' failed",
+          async ({ name, schedules }) => {
+            const plistPath = getPlistPath(name);
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            prompt.getAction.mockResolvedValue("schedule");
+            prompt.getScheduleAction.mockResolvedValue("remove");
+            prompt.getScheduleToRemove.mockResolvedValue(name);
+            mockJoin.mockReturnValue(plistPath);
+            scheduleService.doesScheduleExist.mockReturnValue(true);
             mockUnlink.mockImplementation(() => {
               throw new Error();
             });
