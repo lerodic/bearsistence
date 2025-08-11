@@ -190,6 +190,10 @@ class Prompt {
 
     return choice;
   }
+
+  async shouldContinue(): Promise<boolean> {
+    return this.getConfirmation("Do you want to do anything else?");
+  }
 }
 
 export default Prompt;
