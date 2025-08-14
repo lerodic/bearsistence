@@ -11,10 +11,12 @@ import type {
 import path from "path";
 import os from "os";
 import { DAYS_OF_WEEK } from "../config/constants";
+import { withNewLines } from "../decorators/withNewlines";
 
 @boundClass
 @injectable()
 class Prompt {
+  @withNewLines
   async getAction(): Promise<Action> {
     const { action } = await inquirer.prompt([
       {
@@ -25,10 +27,6 @@ class Prompt {
           {
             name: "⌛ Manage schedules",
             value: "schedule",
-          },
-          {
-            name: "📊 View status",
-            value: "status",
           },
           {
             name: "🐻 Test Bear Notes connection",
@@ -45,6 +43,7 @@ class Prompt {
     return action;
   }
 
+  @withNewLines
   async getScheduleAction(): Promise<ScheduleAction> {
     const { scheduleAction } = await inquirer.prompt({
       type: "list",
@@ -73,6 +72,7 @@ class Prompt {
     return scheduleAction;
   }
 
+  @withNewLines
   async getScheduleName(): Promise<string> {
     const { scheduleName } = await inquirer.prompt({
       type: "input",
@@ -85,6 +85,7 @@ class Prompt {
     return scheduleName;
   }
 
+  @withNewLines
   async getScheduleFrequency(): Promise<ScheduleFrequency> {
     const { frequency } = await inquirer.prompt({
       type: "list",
@@ -113,6 +114,7 @@ class Prompt {
     return frequency;
   }
 
+  @withNewLines
   async getBackupTime(): Promise<string> {
     const { backupTime } = await inquirer.prompt({
       type: "input",
@@ -126,6 +128,7 @@ class Prompt {
     return backupTime;
   }
 
+  @withNewLines
   async getBackupDayOfWeek(): Promise<Day> {
     const { dayOfWeek } = await inquirer.prompt({
       type: "list",
@@ -137,6 +140,7 @@ class Prompt {
     return dayOfWeek;
   }
 
+  @withNewLines
   async getBackupInterval(): Promise<number> {
     const { hours } = await inquirer.prompt({
       type: "number",
@@ -150,6 +154,7 @@ class Prompt {
     return hours;
   }
 
+  @withNewLines
   async getOutputPath(): Promise<string> {
     const { outputPath } = await inquirer.prompt({
       type: "input",
@@ -166,6 +171,7 @@ class Prompt {
     return outputPath;
   }
 
+  @withNewLines
   async getScheduleToRemove(schedules: BackupSchedule[]): Promise<string> {
     const { schedule } = await inquirer.prompt({
       type: "list",
@@ -177,6 +183,7 @@ class Prompt {
     return schedule;
   }
 
+  @withNewLines
   async getConfirmation(message: string): Promise<boolean> {
     const { choice } = await inquirer.prompt({
       type: "list",
