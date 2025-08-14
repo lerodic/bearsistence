@@ -105,20 +105,11 @@ class ScheduleService {
   private getNextBackupForDailySchedule(schedule: BackupSchedule): Date {
     const now = new Date(Date.now());
     const [hours, minutes] = schedule.options.time!.split(":").map(Number);
-    const nextBackup = new Date(
-      Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate(),
-        hours,
-        minutes,
-        0,
-        0
-      )
-    );
+    const nextBackup = new Date(now);
+    nextBackup.setHours(hours, minutes);
 
     if (nextBackup.getTime() <= Date.now()) {
-      nextBackup.setUTCDate(nextBackup.getUTCDate() + 1);
+      nextBackup.setDate(nextBackup.getDate() + 1);
     }
 
     return nextBackup;
@@ -128,17 +119,8 @@ class ScheduleService {
     const now = new Date(Date.now());
     const [hours, minutes] = schedule.options.time!.split(":").map(Number);
     const targetDayIndex = DAYS_OF_WEEK.indexOf(schedule.options.day!);
-    const nextBackup = new Date(
-      Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate(),
-        hours,
-        minutes,
-        0,
-        0
-      )
-    );
+    const nextBackup = new Date(now);
+    nextBackup.setHours(hours, minutes);
 
     const currentDayIndex = (now.getDay() + 6) % 7;
     let daysUntil = targetDayIndex - currentDayIndex;
@@ -150,7 +132,7 @@ class ScheduleService {
       daysUntil += 7;
     }
 
-    nextBackup.setUTCDate(nextBackup.getUTCDate() + daysUntil);
+    nextBackup.setDate(nextBackup.getDate() + daysUntil);
 
     return nextBackup;
   }
