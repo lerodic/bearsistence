@@ -368,7 +368,7 @@ describe("CommandMode", () => {
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               2,
-              `launchctl load ${plistPath}`
+              `launchctl bootstrap gui/$(id -u) ${plistPath}`
             );
             expect(logger.success).toHaveBeenCalledWith(
               "Backup task scheduled successfully!"
@@ -409,7 +409,7 @@ describe("CommandMode", () => {
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               2,
-              `launchctl load ${plistPath}`
+              `launchctl bootstrap gui/$(id -u) ${plistPath}`
             );
             expect(logger.success).toHaveBeenCalledWith(
               "Backup task scheduled successfully!"
@@ -450,7 +450,7 @@ describe("CommandMode", () => {
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               2,
-              `launchctl load ${plistPath}`
+              `launchctl bootstrap gui/$(id -u) ${plistPath}`
             );
             expect(logger.success).toHaveBeenCalledWith(
               "Backup task scheduled successfully!"
