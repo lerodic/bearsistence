@@ -122,7 +122,8 @@ abstract class Mode {
       frequency: schedule.frequency,
       time: schedule.options.time ?? "-",
       day: schedule.options.day ?? "-",
-      interval: schedule.options.hours ?? "-",
+      interval: schedule.options.hours ? `${schedule.options.hours}h` : "-",
+      "next backup": this.scheduleService.getNextBackup(schedule),
     })) as Record<string, any>;
 
     this.logger.table(rows);
