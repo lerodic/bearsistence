@@ -51,7 +51,6 @@ describe("InteractiveMode", () => {
       getScheduleName: jest.fn(),
       getScheduleAction: jest.fn(),
       getScheduleFrequency: jest.fn(),
-      getOutputPath: jest.fn(),
       getBackupDayOfWeek: jest.fn(),
       getBackupTime: jest.fn(),
       getBackupInterval: jest.fn(),
@@ -159,9 +158,6 @@ describe("InteractiveMode", () => {
             prompt.getScheduleName.mockResolvedValue(name);
             prompt.getScheduleFrequency.mockResolvedValue(frequency);
             prompt.getBackupTime.mockResolvedValue(options.time as string);
-            prompt.getOutputPath.mockResolvedValue(
-              options.outputPath as string
-            );
             mockGenerate.mockReturnValue(plistContent);
             mockJoin.mockReturnValue(plistPath);
             scheduleService.add.mockResolvedValue(false);
@@ -191,9 +187,6 @@ describe("InteractiveMode", () => {
             prompt.getScheduleName.mockResolvedValue(name);
             prompt.getScheduleFrequency.mockResolvedValue(frequency);
             prompt.getBackupTime.mockResolvedValue(options.time as string);
-            prompt.getOutputPath.mockResolvedValue(
-              options.outputPath as string
-            );
             mockGenerate.mockReturnValue(plistContent);
             mockJoin.mockReturnValue(plistPath);
             scheduleService.add.mockResolvedValue(true);
@@ -211,7 +204,7 @@ describe("InteractiveMode", () => {
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               2,
-              `launchctl load ${plistPath}`
+              `launchctl bootstrap gui/$(id -u) ${plistPath}`
             );
             expect(logger.success).toHaveBeenCalledWith(
               "Backup task scheduled successfully!"
@@ -230,9 +223,6 @@ describe("InteractiveMode", () => {
             prompt.getScheduleFrequency.mockResolvedValue(frequency);
             prompt.getBackupDayOfWeek.mockResolvedValue(options.day as Day);
             prompt.getBackupTime.mockResolvedValue(options.time as string);
-            prompt.getOutputPath.mockResolvedValue(
-              options.outputPath as string
-            );
             mockGenerate.mockReturnValue(plistContent);
             mockJoin.mockReturnValue(plistPath);
             scheduleService.add.mockResolvedValue(true);
@@ -250,7 +240,7 @@ describe("InteractiveMode", () => {
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               2,
-              `launchctl load ${plistPath}`
+              `launchctl bootstrap gui/$(id -u) ${plistPath}`
             );
             expect(logger.success).toHaveBeenCalledWith(
               "Backup task scheduled successfully!"
@@ -268,9 +258,6 @@ describe("InteractiveMode", () => {
             prompt.getScheduleName.mockResolvedValue(name);
             prompt.getScheduleFrequency.mockResolvedValue(frequency);
             prompt.getBackupInterval.mockResolvedValue(options.hours as number);
-            prompt.getOutputPath.mockResolvedValue(
-              options.outputPath as string
-            );
             mockGenerate.mockReturnValue(plistContent);
             mockJoin.mockReturnValue(plistPath);
             scheduleService.add.mockResolvedValue(true);
@@ -288,7 +275,7 @@ describe("InteractiveMode", () => {
             );
             expect(mockExec).toHaveBeenNthCalledWith(
               2,
-              `launchctl load ${plistPath}`
+              `launchctl bootstrap gui/$(id -u) ${plistPath}`
             );
             expect(logger.success).toHaveBeenCalledWith(
               "Backup task scheduled successfully!"
