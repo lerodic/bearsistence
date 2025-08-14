@@ -76,7 +76,7 @@ abstract class Mode {
   private loadLaunchDaemon(id: string, plistPath: string) {
     this.unloadLaunchDaemon(id);
 
-    exec(`launchctl load ${plistPath}`);
+    exec(`launchctl bootstrap gui/$(id -u) ${plistPath}`);
     this.logger.success("Backup task scheduled successfully!");
   }
 
