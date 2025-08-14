@@ -140,13 +140,18 @@ abstract class Mode {
       await this.removeSchedulePlistFile(schedule);
       await this.scheduleService.remove(schedule);
       this.unloadLaunchDaemon(id);
-      this.logger.success(`Schedule '${schedule} deleted successfully!'`);
+      this.logger.success(`Schedule '${schedule}' deleted successfully!'`);
     } catch {
       this.logger.error(`Failed to delete schedule '${schedule}'`);
     }
   }
 
   protected async clearSchedules() {
+    const schedules = this.scheduleService.schedules;
+    if (schedules.length === 0) {
+      return this.logger.warn("You haven't set up any schedules yet.");
+    }
+
     for (const schedule of this.scheduleService.schedules) {
       try {
         await this.removeSchedulePlistFile(schedule.name);
