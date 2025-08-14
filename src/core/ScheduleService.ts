@@ -1,6 +1,6 @@
 import { boundClass } from "autobind-decorator";
 import { injectable } from "inversify";
-import { BackupSchedule } from "../types";
+import { BackupSchedule, BackupScheduleExtended } from "../types";
 import fs from "fs/promises";
 import path from "path";
 import os from "os";
@@ -8,9 +8,9 @@ import os from "os";
 @boundClass
 @injectable()
 class ScheduleService {
-  constructor(private _schedules: BackupSchedule[] = []) {}
+  constructor(private _schedules: BackupScheduleExtended[] = []) {}
 
-  get schedules(): BackupSchedule[] {
+  get schedules(): BackupScheduleExtended[] {
     return [...this._schedules];
   }
 
@@ -60,14 +60,14 @@ class ScheduleService {
     await this.overwriteLocalFile(this.schedules);
   }
 
-  private async saveToLocalFile(schedule: BackupSchedule) {
-    const currentSchedules: BackupSchedule[] = await this.loadFromLocalFile();
+  private async saveToLocalFile(schedule: BackupScheduleExtended) {
+    const currentSchedules = await this.loadFromLocalFile();
     currentSchedules.push(schedule);
 
     await this.overwriteLocalFile(currentSchedules);
   }
 
-  private async overwriteLocalFile(schedules: BackupSchedule[]) {
+  private async overwriteLocalFile(schedules: BackupScheduleExtended[]) {
     await fs.writeFile(
       path.join(os.homedir(), ".bearsistence", "schedules.json"),
       JSON.stringify(schedules),
