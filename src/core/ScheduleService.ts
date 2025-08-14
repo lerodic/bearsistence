@@ -38,8 +38,13 @@ class ScheduleService {
         await this.remove(schedule.name);
       }
 
-      await this.saveToLocalFile(schedule);
-      this._schedules.push(schedule);
+      const scheduleWithDate = {
+        ...schedule,
+        createdAt: Date.now(),
+      };
+
+      await this.saveToLocalFile(scheduleWithDate);
+      this._schedules.push(scheduleWithDate);
 
       return true;
     } catch {
