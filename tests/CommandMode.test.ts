@@ -11,6 +11,7 @@ import {
   addWeeklyScheduleFixtures,
   clearSchedulesFixtures,
   listSchedulesFixtures,
+  NEXT_BACKUP,
   removeExistingScheduleFixtures,
   removeNonExistingScheduleFixtures,
 } from "./fixtures/Mode.fixtures";
@@ -185,6 +186,7 @@ describe("CommandMode", () => {
       add: jest.fn(),
       remove: jest.fn(),
       doesScheduleExist: jest.fn(),
+      getNextBackup: jest.fn(),
     } as unknown as jest.Mocked<ScheduleService>;
 
     parser = {
@@ -471,7 +473,7 @@ describe("CommandMode", () => {
 
           await commandMode.run();
 
-          expect(logger.info).toHaveBeenCalledWith(
+          expect(logger.warn).toHaveBeenCalledWith(
             "You haven't set up any schedules yet."
           );
         });
@@ -488,6 +490,7 @@ describe("CommandMode", () => {
               "schedule",
               "list",
             ]);
+            scheduleService.getNextBackup.mockReturnValue(NEXT_BACKUP);
 
             await commandMode.run();
 

@@ -59,6 +59,8 @@ export const addHourlyScheduleFixtures: BackupSchedule[] = [
   },
 ];
 
+export const NEXT_BACKUP = "1d 1h 1m";
+
 export const listSchedulesFixtures = [
   {
     schedules: [
@@ -77,6 +79,7 @@ export const listSchedulesFixtures = [
         time: "02:00",
         day: "-",
         interval: "-",
+        "next backup": NEXT_BACKUP,
       },
     ],
   },
@@ -105,6 +108,7 @@ export const listSchedulesFixtures = [
         time: "02:00",
         day: "-",
         interval: "-",
+        "next backup": NEXT_BACKUP,
       },
       {
         name: "Second schedule",
@@ -112,6 +116,7 @@ export const listSchedulesFixtures = [
         time: "21:00",
         day: "Monday",
         interval: "-",
+        "next backup": NEXT_BACKUP,
       },
     ],
   },
@@ -147,6 +152,7 @@ export const listSchedulesFixtures = [
         time: "02:00",
         day: "-",
         interval: "-",
+        "next backup": NEXT_BACKUP,
       },
       {
         name: "Second schedule",
@@ -154,13 +160,15 @@ export const listSchedulesFixtures = [
         time: "21:00",
         day: "Monday",
         interval: "-",
+        "next backup": NEXT_BACKUP,
       },
       {
         name: "Third schedule",
         frequency: "hourly",
         time: "-",
         day: "-",
-        interval: 20,
+        interval: "20h",
+        "next backup": NEXT_BACKUP,
       },
     ],
   },

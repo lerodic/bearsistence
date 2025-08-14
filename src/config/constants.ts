@@ -32,3 +32,10 @@ export const PLIST_PATH = path.join(
   "LaunchAgents",
   `${PLIST_LABEL}.plist`
 );
+
+export const enum TimeUnits {
+  MS_PER_MINUTE = 60_000,
+  MINUTES_PER_DAY = 24 * 60,
+  MINUTES_PER_HOUR = 60,
+  SECONDS_PER_MINUTE = 60,
+}

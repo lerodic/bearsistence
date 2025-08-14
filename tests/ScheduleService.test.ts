@@ -4,8 +4,10 @@ import fs from "fs/promises";
 import path from "path";
 import {
   addScheduleFixtures,
+  CURRENT_TIMESTAMP,
   doesScheduleExistFalseFixtures,
   doesScheduleExistTrueFixtures,
+  getNextBackupFixtures,
   removeExistingScheduleFixtures,
   removeNonExistingScheduleFixtures,
 } from "./fixtures/ScheduleService.fixtures";
@@ -84,6 +86,7 @@ describe("ScheduleService", () => {
     it.each(addScheduleFixtures)(
       "should add new schedule: '$schedule.name', persist locally, and return true",
       async ({ schedule, initialSchedules, expected }) => {
+        jest.spyOn(Date, "now").mockReturnValue(schedule.createdAt);
         mockReadFile.mockResolvedValue(JSON.stringify([...initialSchedules]));
         const mockParse = jest.spyOn(JSON, "parse");
         mockParse.mockReturnValue([...initialSchedules]);
@@ -100,6 +103,7 @@ describe("ScheduleService", () => {
     it.each(addScheduleFixtures)(
       "should not add new schedule and instead return false on error",
       async ({ schedule, initialSchedules, expected }) => {
+        jest.spyOn(Date, "now").mockReturnValue(schedule.createdAt);
         mockReadFile.mockResolvedValue(JSON.stringify([...initialSchedules]));
         const mockParse = jest.spyOn(JSON, "parse");
         mockParse.mockReturnValue([...initialSchedules]);
@@ -118,6 +122,7 @@ describe("ScheduleService", () => {
     it.each(addScheduleFixtures)(
       "should overwrite already existing schedule and return true",
       async ({ schedule }) => {
+        jest.spyOn(Date, "now").mockReturnValue(schedule.createdAt);
         const schedulesJsonPath = "/Users/test/.bearsistence/schedules.json";
         mockJoin.mockReturnValue(schedulesJsonPath);
         mockReadFile.mockResolvedValue(JSON.stringify([]));
@@ -189,6 +194,21 @@ describe("ScheduleService", () => {
         const result = scheduleService.doesScheduleExist(name);
 
         expect(result).toBe(false);
+      }
+    );
+  });
+
+  describe("getNextBackup", () => {
+    it.each(getNextBackupFixtures)(
+      "should return '$expected' for $schedule.frequency schedule '$schedule.name'",
+      ({ schedule, expected }) => {
+        jest.spyOn(Date, "now").mockReturnValue(CURRENT_TIMESTAMP);
+
+        const scheduleService = new ScheduleService();
+
+        const result = scheduleService.getNextBackup(schedule);
+
+        expect(result).toStrictEqual(expected);
       }
     );
   });

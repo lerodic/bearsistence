@@ -1,15 +1,15 @@
-import { BackupSchedule } from "../../src/types";
+import { BackupScheduleExtended } from "../../src/types";
 
 interface AddScheduleFixture {
-  schedule: BackupSchedule;
-  initialSchedules: BackupSchedule[];
-  expected: BackupSchedule[];
+  schedule: BackupScheduleExtended;
+  initialSchedules: BackupScheduleExtended[];
+  expected: BackupScheduleExtended[];
 }
 
 interface RemoveScheduleFixtures {
   name: string;
-  initialSchedules: BackupSchedule[];
-  expected: BackupSchedule[];
+  initialSchedules: BackupScheduleExtended[];
+  expected: BackupScheduleExtended[];
 }
 
 export const addScheduleFixtures: AddScheduleFixture[] = [
@@ -21,6 +21,7 @@ export const addScheduleFixtures: AddScheduleFixture[] = [
         time: "02:00",
         outputPath: "/Users/test/BearBackup",
       },
+      createdAt: 0,
     },
     initialSchedules: [],
     expected: [
@@ -31,6 +32,7 @@ export const addScheduleFixtures: AddScheduleFixture[] = [
           time: "02:00",
           outputPath: "/Users/test/BearBackup",
         },
+        createdAt: 0,
       },
     ],
   },
@@ -47,6 +49,7 @@ export const removeExistingScheduleFixtures: RemoveScheduleFixtures[] = [
           time: "02:00",
           outputPath: "/Users/test/BearBackup",
         },
+        createdAt: 0,
       },
     ],
     expected: [],
@@ -63,7 +66,7 @@ export const removeNonExistingScheduleFixtures: RemoveScheduleFixtures[] = [
 
 export const doesScheduleExistTrueFixtures: {
   name: string;
-  schedules: BackupSchedule[];
+  schedules: BackupScheduleExtended[];
 }[] = [
   {
     name: "Test schedule",
@@ -75,6 +78,7 @@ export const doesScheduleExistTrueFixtures: {
           time: "02:00",
           outputPath: "/Users/test/BearBackup",
         },
+        createdAt: 0,
       },
     ],
   },
@@ -88,6 +92,7 @@ export const doesScheduleExistTrueFixtures: {
           time: "02:00",
           outputPath: "/Users/test/BearBackup",
         },
+        createdAt: 0,
       },
       {
         name: "Second schedule",
@@ -96,6 +101,7 @@ export const doesScheduleExistTrueFixtures: {
           time: "03:00",
           outputPath: "/Users/test/BearBackup",
         },
+        createdAt: 0,
       },
       {
         name: "Third schedule",
@@ -104,6 +110,7 @@ export const doesScheduleExistTrueFixtures: {
           time: "04:00",
           outputPath: "/Users/test/BearBackup",
         },
+        createdAt: 0,
       },
     ],
   },
@@ -111,7 +118,7 @@ export const doesScheduleExistTrueFixtures: {
 
 export const doesScheduleExistFalseFixtures: {
   name: string;
-  schedules: BackupSchedule[];
+  schedules: BackupScheduleExtended[];
 }[] = [
   {
     name: "Test_schedule",
@@ -123,6 +130,7 @@ export const doesScheduleExistFalseFixtures: {
           time: "02:00",
           outputPath: "/Users/test/BearBackup",
         },
+        createdAt: 0,
       },
     ],
   },
@@ -135,6 +143,7 @@ export const doesScheduleExistFalseFixtures: {
         options: {
           time: "02:00",
         },
+        createdAt: 0,
       },
       {
         name: "Second schedule",
@@ -142,6 +151,7 @@ export const doesScheduleExistFalseFixtures: {
         options: {
           time: "03:00",
         },
+        createdAt: 0,
       },
       {
         name: "Third schedule",
@@ -149,7 +159,85 @@ export const doesScheduleExistFalseFixtures: {
         options: {
           time: "04:00",
         },
+        createdAt: 0,
       },
     ],
   },
 ];
+
+/* Thursday, 14 August 2025 @ 10:00*/
+export const CURRENT_TIMESTAMP = 1755165638000;
+
+export const getNextBackupFixtures = [
+  {
+    schedule: {
+      name: "An hourly schedule",
+      frequency: "hourly",
+      options: {
+        hours: 10,
+      },
+      createdAt: CURRENT_TIMESTAMP - 60 * 60 * 1000,
+    },
+    expected: "9h",
+  },
+  {
+    schedule: {
+      name: "Another hourly schedule",
+      frequency: "hourly",
+      options: {
+        hours: 2,
+      },
+      createdAt: CURRENT_TIMESTAMP - 60 * 60 * 1000,
+    },
+    expected: "1h",
+  },
+  {
+    schedule: {
+      name: "A daily schedule",
+      frequency: "daily",
+      options: {
+        time: "10:15",
+      },
+      createdAt: CURRENT_TIMESTAMP - 60 * 60 * 1000,
+    },
+    expected: "15m",
+  },
+  {
+    schedule: {
+      name: "Another daily schedule",
+      frequency: "daily",
+      options: {
+        time: "09:23",
+      },
+      createdAt: CURRENT_TIMESTAMP - 60 * 60 * 1000,
+    },
+    expected: "23h 23m",
+  },
+  {
+    schedule: {
+      name: "A weekly schedule",
+      frequency: "weekly",
+      options: {
+        time: "11:15",
+        day: "Sunday",
+      },
+      createdAt: CURRENT_TIMESTAMP - 60 * 60 * 1000,
+    },
+    expected: "3d 1h 15m",
+  },
+  {
+    schedule: {
+      name: "Another weekly schedule",
+      frequency: "weekly",
+      options: {
+        time: "09:30",
+        day: "Thursday",
+      },
+      createdAt: CURRENT_TIMESTAMP - 60 * 60 * 1000,
+    },
+    expected: "6d 23h 30m",
+  },
+] as {
+  schedule: BackupScheduleExtended;
+  expected: string;
+}[];

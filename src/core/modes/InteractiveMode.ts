@@ -150,6 +150,10 @@ class InteractiveMode extends Mode {
   }
 
   private async removeAllSchedules() {
+    if (!this.doAnySchedulesExist()) {
+      return this.logger.warn("You have not created any schedules yet.");
+    }
+
     const isConfirmed = await this.prompt.getConfirmation(
       "Are you sure you want to remove all schedules? This action is irreversible."
     );

@@ -111,10 +111,10 @@ abstract class Mode {
     return this.parser.parse(rawResult as string, options.defaultValues);
   }
 
-  protected async listSchedules() {
+  protected listSchedules() {
     const schedules = this.scheduleService.schedules;
     if (schedules.length === 0) {
-      return this.logger.info("You haven't set up any schedules yet.");
+      return this.logger.warn("You haven't set up any schedules yet.");
     }
 
     const rows = schedules.map((schedule) => ({
@@ -122,7 +122,8 @@ abstract class Mode {
       frequency: schedule.frequency,
       time: schedule.options.time ?? "-",
       day: schedule.options.day ?? "-",
-      interval: schedule.options.hours ?? "-",
+      interval: schedule.options.hours ? `${schedule.options.hours}h` : "-",
+      "next backup": this.scheduleService.getNextBackup(schedule),
     })) as Record<string, any>;
 
     this.logger.table(rows);
