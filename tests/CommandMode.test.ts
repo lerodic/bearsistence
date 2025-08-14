@@ -545,7 +545,7 @@ describe("CommandMode", () => {
             expect(mockUnlink).toHaveBeenCalledWith(plistPath);
             expect(scheduleService.remove).toHaveBeenCalledWith(name);
             expect(logger.success).toHaveBeenCalledWith(
-              `Schedule '${name} deleted successfully!'`
+              `Schedule '${name}' deleted successfully!'`
             );
           }
         );
@@ -604,6 +604,26 @@ describe("CommandMode", () => {
             );
           }
         );
+
+        it("should log warning message if no schedules exist", async () => {
+          jest.replaceProperty(process, "argv", [
+            "don't",
+            "care",
+            "schedule",
+            "clear",
+          ]);
+          Object.defineProperty(scheduleService, "schedules", {
+            get: jest.fn(() => []),
+          });
+          mockJoin.mockReturnValue("");
+          mockUnlink.mockResolvedValue(undefined);
+
+          await commandMode.run();
+
+          expect(logger.warn).toHaveBeenCalledWith(
+            "You haven't set up any schedules yet."
+          );
+        });
 
         it.each(clearSchedulesFixtures)(
           "should delete all existing schedules",
