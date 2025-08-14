@@ -77,7 +77,7 @@ class InteractiveMode extends Mode {
         await this.setupSchedule();
         break;
       case "list":
-        await this.listSchedules();
+        this.listSchedules();
         break;
       case "remove":
         await this.removeSchedule();
@@ -109,13 +109,6 @@ class InteractiveMode extends Mode {
   private async getScheduleCreationOptions(
     frequency: ScheduleFrequency
   ): Promise<BackupScheduleOptions> {
-    const options = await this.getFrequencyRelatedOptions(frequency);
-    options.outputPath = await this.prompt.getOutputPath();
-
-    return options;
-  }
-
-  private async getFrequencyRelatedOptions(frequency: ScheduleFrequency) {
     const options: BackupScheduleOptions = {};
 
     switch (frequency) {
