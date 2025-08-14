@@ -18,6 +18,7 @@ import {
   removeExistingScheduleFixtures,
   removeNonExistingScheduleFixtures,
   clearSchedulesFixtures,
+  NEXT_BACKUP,
 } from "./fixtures/Mode.fixtures";
 import { getPlistLabel, getPlistPath } from "./utils/utils";
 
@@ -322,6 +323,7 @@ describe("InteractiveMode", () => {
             });
             prompt.getAction.mockResolvedValue("schedule");
             prompt.getScheduleAction.mockResolvedValue("list");
+            scheduleService.getNextBackup.mockReturnValue(NEXT_BACKUP);
 
             await interactiveMode.run();
 
