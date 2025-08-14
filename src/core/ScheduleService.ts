@@ -103,10 +103,7 @@ class ScheduleService {
   }
 
   private getNextBackupForDailySchedule(schedule: BackupSchedule): Date {
-    const now = new Date(Date.now());
-    const [hours, minutes] = schedule.options.time!.split(":").map(Number);
-    const nextBackup = new Date(now);
-    nextBackup.setHours(hours, minutes);
+    const nextBackup = this.prepareNextBackupDate(schedule);
 
     if (nextBackup.getTime() <= Date.now()) {
       nextBackup.setDate(nextBackup.getDate() + 1);
@@ -115,26 +112,34 @@ class ScheduleService {
     return nextBackup;
   }
 
-  private getNextBackupForWeeklySchedule(schedule: BackupSchedule): Date {
+  private prepareNextBackupDate(schedule: BackupSchedule): Date {
     const now = new Date(Date.now());
     const [hours, minutes] = schedule.options.time!.split(":").map(Number);
-    const targetDayIndex = DAYS_OF_WEEK.indexOf(schedule.options.day!);
     const nextBackup = new Date(now);
     nextBackup.setHours(hours, minutes);
 
-    const currentDayIndex = (now.getDay() + 6) % 7;
+    return nextBackup;
+  }
+
+  private getNextBackupForWeeklySchedule(schedule: BackupSchedule): Date {
+    const nextBackup = this.prepareNextBackupDate(schedule);
+    const targetDayIndex = DAYS_OF_WEEK.indexOf(schedule.options.day!);
+    const currentDayIndex = (new Date(Date.now()).getDay() + 6) % 7;
     let daysUntil = targetDayIndex - currentDayIndex;
 
-    if (
-      daysUntil < 0 ||
-      (daysUntil === 0 && nextBackup.getTime() <= Date.now())
-    ) {
+    if (this.didBackupJustTakePlace(daysUntil, nextBackup)) {
       daysUntil += 7;
     }
 
     nextBackup.setDate(nextBackup.getDate() + daysUntil);
 
     return nextBackup;
+  }
+
+  private didBackupJustTakePlace(daysUntil: number, nextBackup: Date): boolean {
+    return (
+      daysUntil < 0 || (daysUntil === 0 && nextBackup.getTime() <= Date.now())
+    );
   }
 
   private getNextBackupForHourlySchedule(
