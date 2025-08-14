@@ -151,23 +151,6 @@ class Prompt {
   }
 
   @withNewLines
-  async getOutputPath(): Promise<string> {
-    const { outputPath } = await inquirer.prompt({
-      type: "input",
-      name: "outputPath",
-      message: "Where do you want to store the backup at?",
-      default: path.join(
-        process.env.BACKUP_DIRECTORY || os.homedir(),
-        "BearBackups"
-      ),
-      validate: (input: string) =>
-        input.trim() !== "" || "Please provide a valid path",
-    });
-
-    return outputPath;
-  }
-
-  @withNewLines
   async getScheduleToRemove(schedules: BackupSchedule[]): Promise<string> {
     const { schedule } = await inquirer.prompt({
       type: "list",
