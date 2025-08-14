@@ -185,6 +185,7 @@ describe("CommandMode", () => {
       add: jest.fn(),
       remove: jest.fn(),
       doesScheduleExist: jest.fn(),
+      getNextBackup: jest.fn(),
     } as unknown as jest.Mocked<ScheduleService>;
 
     parser = {
@@ -471,7 +472,7 @@ describe("CommandMode", () => {
 
           await commandMode.run();
 
-          expect(logger.info).toHaveBeenCalledWith(
+          expect(logger.warn).toHaveBeenCalledWith(
             "You haven't set up any schedules yet."
           );
         });
