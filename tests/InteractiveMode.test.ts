@@ -76,6 +76,7 @@ describe("InteractiveMode", () => {
       add: jest.fn(),
       remove: jest.fn(),
       doesScheduleExist: jest.fn(),
+      getNextBackup: jest.fn(),
     } as unknown as jest.Mocked<ScheduleService>;
 
     mockCallHandler = jest.fn();
@@ -305,12 +306,10 @@ describe("InteractiveMode", () => {
 
           await interactiveMode.run();
 
-          expect(logger.info).toHaveBeenNthCalledWith(
-            1,
+          expect(logger.info).toHaveBeenCalledWith(
             "🐻 Welcome to Bearsistence!\n"
           );
-          expect(logger.info).toHaveBeenNthCalledWith(
-            2,
+          expect(logger.warn).toHaveBeenCalledWith(
             "You haven't set up any schedules yet."
           );
         });
@@ -364,7 +363,7 @@ describe("InteractiveMode", () => {
             expect(mockUnlink).toHaveBeenCalledWith(plistPath);
             expect(scheduleService.remove).toHaveBeenCalledWith(name);
             expect(logger.success).toHaveBeenCalledWith(
-              `Schedule '${name} deleted successfully!'`
+              `Schedule '${name}' deleted successfully!'`
             );
           }
         );
