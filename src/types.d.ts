@@ -9,7 +9,7 @@ export interface ScriptExecutionOptions {
 
 export type Program = Command;
 
-export type Action = "schedule" | "status" | "test" | "exit";
+export type Action = "schedule" | "test" | "exit";
 
 export type ScheduleAction = "add" | "list" | "remove" | "clear";
 
@@ -28,6 +28,10 @@ export interface BackupScheduleOptions {
   day?: Day;
   hours?: number;
   outputPath?: string;
+}
+
+export interface BackupScheduleExtended extends BackupSchedule {
+  createdAt: number;
 }
 
 export type BackupScheduleOptionsDaily = Required<
