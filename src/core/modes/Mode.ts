@@ -111,10 +111,10 @@ abstract class Mode {
     return this.parser.parse(rawResult as string, options.defaultValues);
   }
 
-  protected async listSchedules() {
+  protected listSchedules() {
     const schedules = this.scheduleService.schedules;
     if (schedules.length === 0) {
-      return this.logger.info("You haven't set up any schedules yet.");
+      return this.logger.warn("You haven't set up any schedules yet.");
     }
 
     const rows = schedules.map((schedule) => ({
