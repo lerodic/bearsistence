@@ -11,6 +11,7 @@ import {
   addWeeklyScheduleFixtures,
   clearSchedulesFixtures,
   listSchedulesFixtures,
+  NEXT_BACKUP,
   removeExistingScheduleFixtures,
   removeNonExistingScheduleFixtures,
 } from "./fixtures/Mode.fixtures";
@@ -489,6 +490,7 @@ describe("CommandMode", () => {
               "schedule",
               "list",
             ]);
+            scheduleService.getNextBackup.mockReturnValue(NEXT_BACKUP);
 
             await commandMode.run();
 
