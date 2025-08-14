@@ -29,10 +29,6 @@ class Prompt {
             value: "schedule",
           },
           {
-            name: "📊 View status",
-            value: "status",
-          },
-          {
             name: "🐻 Test Bear Notes connection",
             value: "test",
           },
