@@ -104,10 +104,6 @@ class Prompt {
           name: "Weekly",
           value: "weekly",
         },
-        {
-          name: "Custom",
-          value: "custom",
-        },
       ],
     });
 
