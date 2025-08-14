@@ -165,8 +165,8 @@ export const doesScheduleExistFalseFixtures: {
   },
 ];
 
-/* Thursday, 14 August 2025 @ 10:00*/
-export const CURRENT_TIMESTAMP = 1755165638000;
+/* Thursday, 14 August 2025 @ 08:00 in UTC*/
+export const CURRENT_TIMESTAMP = Date.UTC(2025, 7, 14, 8, 0, 0, 0);
 
 export const getNextBackupFixtures = [
   {
