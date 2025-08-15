@@ -344,6 +344,7 @@ describe("InteractiveMode", () => {
             prompt.getAction.mockResolvedValue("schedule");
             prompt.getScheduleAction.mockResolvedValue("remove");
             prompt.getScheduleToRemove.mockResolvedValue(name);
+            prompt.getConfirmation.mockResolvedValue(true);
             mockJoin.mockReturnValue(plistPath);
             scheduleService.doesScheduleExist.mockReturnValue(true);
 
@@ -367,6 +368,7 @@ describe("InteractiveMode", () => {
             prompt.getAction.mockResolvedValue("schedule");
             prompt.getScheduleAction.mockResolvedValue("remove");
             prompt.getScheduleToRemove.mockResolvedValue(name);
+            prompt.getConfirmation.mockResolvedValue(true);
             mockJoin.mockReturnValue(plistPath);
             scheduleService.doesScheduleExist.mockReturnValue(false);
 
@@ -388,6 +390,7 @@ describe("InteractiveMode", () => {
             prompt.getAction.mockResolvedValue("schedule");
             prompt.getScheduleAction.mockResolvedValue("remove");
             prompt.getScheduleToRemove.mockResolvedValue(name);
+            prompt.getConfirmation.mockResolvedValue(true);
             mockJoin.mockReturnValue(plistPath);
             scheduleService.doesScheduleExist.mockReturnValue(true);
             mockUnlink.mockImplementation(() => {
@@ -401,6 +404,27 @@ describe("InteractiveMode", () => {
             );
             expect(scheduleService.remove).not.toHaveBeenCalled();
             expect(logger.success).not.toHaveBeenCalled();
+          }
+        );
+
+        it.each(removeExistingScheduleFixtures)(
+          "should abort if user does not confirm removal of schedule '$name'",
+          async ({ name, schedules }) => {
+            const plistPath = getPlistPath(name);
+            Object.defineProperty(scheduleService, "schedules", {
+              get: jest.fn(() => schedules),
+            });
+            prompt.getAction.mockResolvedValue("schedule");
+            prompt.getScheduleAction.mockResolvedValue("remove");
+            prompt.getScheduleToRemove.mockResolvedValue(name);
+            prompt.getConfirmation.mockResolvedValue(false);
+            mockJoin.mockReturnValue(plistPath);
+            scheduleService.doesScheduleExist.mockReturnValue(true);
+
+            await interactiveMode.run();
+
+            expect(logger.warn).toHaveBeenCalledWith("Action aborted.");
+            expect(mockUnlink).not.toHaveBeenCalled();
           }
         );
       });

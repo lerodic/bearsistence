@@ -135,6 +135,13 @@ class InteractiveMode extends Mode {
       this.scheduleService.schedules
     );
 
+    const isConfirmed = await this.prompt.getConfirmation(
+      `Are you sure you want to remove schedule '${scheduleToRemove}'?`
+    );
+    if (!isConfirmed) {
+      return this.logger.warn(`Action aborted.`);
+    }
+
     await this.deleteSchedule(scheduleToRemove);
   }
 
