@@ -140,7 +140,7 @@ abstract class Mode {
       await this.removeSchedulePlistFile(schedule);
       await this.scheduleService.remove(schedule);
       this.unloadLaunchDaemon(id);
-      this.logger.success(`Schedule '${schedule}' deleted successfully!'`);
+      this.logger.success(`Schedule '${schedule}' deleted successfully!`);
     } catch {
       this.logger.error(`Failed to delete schedule '${schedule}'`);
     }
@@ -158,7 +158,7 @@ abstract class Mode {
         await this.scheduleService.remove(schedule.name);
       } catch {
         return this.logger.error(
-          `Failed to delete schedule '${schedule.name}. Aborting.'`
+          `Failed to delete schedule '${schedule.name}'. Aborting.`
         );
       }
     }
