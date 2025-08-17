@@ -353,7 +353,7 @@ describe("InteractiveMode", () => {
             expect(mockUnlink).toHaveBeenCalledWith(plistPath);
             expect(scheduleService.remove).toHaveBeenCalledWith(name);
             expect(logger.success).toHaveBeenCalledWith(
-              `Schedule '${name}' deleted successfully!'`
+              `Schedule '${name}' deleted successfully!`
             );
           }
         );
@@ -490,7 +490,7 @@ describe("InteractiveMode", () => {
             await interactiveMode.run();
 
             expect(logger.error).toHaveBeenCalledWith(
-              `Failed to delete schedule '${schedules[0].name}. Aborting.'`
+              `Failed to delete schedule '${schedules[0].name}'. Aborting.`
             );
           }
         );
