@@ -2,6 +2,9 @@
   "name": "bearsistence",
   "version": "1.0.0",
   "main": "index.js",
+  "bin": {
+    "bearsistence": "./dist/main.js"
+  },
   "scripts": {
     "copyScriptsFolder": "cp -r ./src/scripts ./dist",
     "build": "tsc && npm run copyScriptsFolder",
