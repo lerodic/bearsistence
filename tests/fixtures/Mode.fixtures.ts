@@ -6,7 +6,6 @@ export const addDailyScheduleFixtures: BackupSchedule[] = [
     frequency: "daily",
     options: {
       time: "02:00",
-      outputPath: "/Users/test/someFolder",
     },
   },
   {
@@ -14,7 +13,6 @@ export const addDailyScheduleFixtures: BackupSchedule[] = [
     frequency: "daily",
     options: {
       time: "13:01",
-      outputPath: "/Users/test/someFolder",
     },
   },
 ];
@@ -26,7 +24,6 @@ export const addWeeklyScheduleFixtures: BackupSchedule[] = [
     options: {
       day: "Monday",
       time: "02:00",
-      outputPath: "/Users/test/someFolder",
     },
   },
   {
@@ -35,7 +32,6 @@ export const addWeeklyScheduleFixtures: BackupSchedule[] = [
     options: {
       day: "Friday",
       time: "19:35",
-      outputPath: "/Users/test/someFolder",
     },
   },
 ];
@@ -46,7 +42,6 @@ export const addHourlyScheduleFixtures: BackupSchedule[] = [
     frequency: "hourly",
     options: {
       hours: 12,
-      outputPath: "/Users/test/someFolder",
     },
   },
   {
@@ -54,7 +49,6 @@ export const addHourlyScheduleFixtures: BackupSchedule[] = [
     frequency: "hourly",
     options: {
       hours: 3,
-      outputPath: "/Users/test/someFolder",
     },
   },
 ];

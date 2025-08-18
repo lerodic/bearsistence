@@ -59,16 +59,16 @@ It offers the exact same capabilities as interactive mode, so you're not missing
 
 Here you can learn what each command and flag does:
 
-| Command    | Subcommand / Option       | Description                            | Example                                                    |
-| ---------- | ------------------------- | -------------------------------------- | ---------------------------------------------------------- |
-| `test`     | —                         | Test the connection to Bear Notes      | `bearsistence test`                                        |
-| `schedule` | `add <name>`              | Add a new backup schedule              | `bearsistence schedule add my-backup -d 14:00 -o /backups` |
-|            | `-d, --daily <time>`      | Daily backup at specified time         | `-d 14:00`                                                 |
-|            | `-w, --weekly <day-time>` | Weekly backup on specific day and time | `-w monday-14:00`                                          |
-|            | `-h, --hourly <hours>`    | Backup every X hours                   | `-h 6`                                                     |
-| `schedule` | `list`                    | List all active schedules              | `bearsistence schedule list`                               |
-| `schedule` | `remove <name>`           | Remove a specific schedule             | `bearsistence schedule remove my-backup`                   |
-| `schedule` | `clear`                   | Remove all active schedules            | `bearsistence schedule clear`                              |
+| Command    | Subcommand / Option       | Description                            | Example                                        |
+| ---------- | ------------------------- | -------------------------------------- | ---------------------------------------------- |
+| `test`     | —                         | Test the connection to Bear Notes      | `bearsistence test`                            |
+| `schedule` | `add <name>`              | Add a new backup schedule              | `bearsistence schedule add my-backup -d 14:00` |
+|            | `-d, --daily <time>`      | Daily backup at specified time         | `-d 14:00`                                     |
+|            | `-w, --weekly <day-time>` | Weekly backup on specific day and time | `-w monday-14:00`                              |
+|            | `-h, --hourly <hours>`    | Backup every X hours                   | `-h 6`                                         |
+| `schedule` | `list`                    | List all active schedules              | `bearsistence schedule list`                   |
+| `schedule` | `remove <name>`           | Remove a specific schedule             | `bearsistence schedule remove my-backup`       |
+| `schedule` | `clear`                   | Remove all active schedules            | `bearsistence schedule clear`                  |
 
 ---
 

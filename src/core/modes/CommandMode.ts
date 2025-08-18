@@ -60,7 +60,6 @@ class CommandMode extends Mode {
         "Weekly backup on specific day at specified time"
       )
       .option("-h, --hourly <hours>", "Backup every X hours", parseInt)
-      .option("-o, --output <path>", "Path to output directory")
       .action(async (name: string, options: CLIOptions) => {
         const schedule = this.parseCommand(name, options);
 
