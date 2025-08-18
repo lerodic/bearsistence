@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import "reflect-metadata";
 import container from "./config/inversify/inversify.config";
 import TYPES from "./config/inversify/inversify.types";
