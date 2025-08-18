@@ -17,16 +17,19 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@types/jest": "^30.0.0",
     "autobind-decorator": "^2.4.0",
     "chalk": "^4.1.2",
     "cli-table3": "^0.6.5",
     "commander": "^14.0.0",
     "inquirer": "^12.8.2",
     "inversify": "^7.6.1",
-    "jest": "^30.0.5",
     "reflect-metadata": "^0.2.2",
-    "ts-jest": "^29.4.0",
+    "typescript": "^5.9.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2"
   }
 }
