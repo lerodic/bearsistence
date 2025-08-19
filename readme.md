@@ -55,7 +55,7 @@ npm link
 ## Command Mode
 
 As an alternative to using Interactive Mode, you can use predefined commands to interact with Bearsistence.  
-It offers the exact same capabilities as interactive mode, so you're not missing out of any of its core features.
+It offers the exact same capabilities as Interactive Mode, so you're not missing out on any of its core features.
 
 Here you can learn what each command and flag does:
 
