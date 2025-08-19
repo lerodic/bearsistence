@@ -105,6 +105,7 @@ Here you can learn what each command and flag does:
 - Hourly backups accept any positive integer for hours (e.g., 1, 6, 12, 40).
 - When removing schedules, use the exact name you provided when adding it.
 - All backups will be stored in `~/.bearsistence`
+- You need to whitelist `osascript`, as well as your terminal of choice in `Privacy & Security -> Accessibility`
 
 ---
 
