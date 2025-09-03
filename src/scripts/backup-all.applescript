@@ -1,3 +1,4 @@
+set previousFrontmostApp to (path to frontmost application) as text
 tell application "Bear" to activate
 delay 0.5
 
@@ -45,3 +46,4 @@ tell application "System Events"
 end tell
 
 delay 3
+activate application previousFrontmostApp
