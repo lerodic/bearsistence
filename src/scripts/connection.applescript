@@ -1,4 +1,5 @@
 on testConnection()
+  set previousFrontmostApp to (path to frontmost application) as text
   set testResult to {isRunning:false, isResponsive:false, errorMessage:""}
 
   try
@@ -6,9 +7,11 @@ on testConnection()
     if not testResult's isRunning then return testResult
 
     set testResult to isBearResponsive(testResult)
+    activate application previousFrontmostApp
     return testResult
 
   on error errMsg
+    activate application previousFrontmostApp
     set testResult's errorMessage to errMsg
     return testResult
   end try
