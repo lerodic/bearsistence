@@ -129,7 +129,10 @@ abstract class Mode {
     this.logger.table(rows);
   }
 
-  protected async deleteSchedule(schedule: string) {
+  protected async deleteSchedule(
+    schedule: string,
+    returnOnError: boolean = false
+  ) {
     if (!this.scheduleService.doesScheduleExist(schedule)) {
       return this.logger.error(`Schedule '${schedule}' does not exist.`);
     }
@@ -142,7 +145,11 @@ abstract class Mode {
       this.unloadLaunchDaemon(id);
       this.logger.success(`Schedule '${schedule}' deleted successfully!`);
     } catch {
-      this.logger.error(`Failed to delete schedule '${schedule}'`);
+      this.logger.error(`Failed to delete schedule '${schedule}'.`);
+
+      if (returnOnError) {
+        return;
+      }
     }
   }
 
@@ -152,18 +159,8 @@ abstract class Mode {
       return this.logger.warn("You haven't set up any schedules yet.");
     }
 
-    for (const schedule of this.scheduleService.schedules) {
-      try {
-        const id = this.generatePlistLabel(schedule.name);
-
-        await this.removeSchedulePlistFile(schedule.name);
-        await this.scheduleService.remove(schedule.name);
-        this.unloadLaunchDaemon(id);
-      } catch {
-        return this.logger.error(
-          `Failed to delete schedule '${schedule.name}'. Aborting.`
-        );
-      }
+    for (const schedule of schedules) {
+      await this.deleteSchedule(schedule.name, true);
     }
 
     this.logger.success("All schedules removed.");
