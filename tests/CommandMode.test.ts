@@ -647,6 +647,9 @@ describe("CommandMode", () => {
               expect(scheduleService.remove).toHaveBeenCalledWith(
                 schedule.name
               );
+              expect(mockExec).toHaveBeenCalledWith(
+                `launchctl bootout gui/$(id -u)/${getPlistLabel(schedule.name)}`
+              );
             });
             expect(logger.success).toHaveBeenCalledWith(
               "All schedules removed."
