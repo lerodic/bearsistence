@@ -400,7 +400,7 @@ describe("InteractiveMode", () => {
             await interactiveMode.run();
 
             expect(logger.error).toHaveBeenCalledWith(
-              `Failed to delete schedule '${name}'`
+              `Failed to delete schedule '${name}'.`
             );
             expect(scheduleService.remove).not.toHaveBeenCalled();
             expect(logger.success).not.toHaveBeenCalled();
@@ -439,17 +439,20 @@ describe("InteractiveMode", () => {
             prompt.getAction.mockResolvedValue("schedule");
             prompt.getScheduleAction.mockResolvedValue("clear");
             prompt.getConfirmation.mockResolvedValue(true);
+            scheduleService.doesScheduleExist.mockReturnValue(true);
             mockJoin.mockReturnValue("");
             mockUnlink.mockResolvedValue(undefined);
 
             await interactiveMode.run();
 
-            schedules.forEach((schedule) => {
+            schedules.forEach((schedule, index) => {
               expect(mockUnlink).toHaveBeenCalled();
-              expect(scheduleService.remove).toHaveBeenCalledWith(
+              expect(scheduleService.remove).toHaveBeenNthCalledWith(
+                index + 1,
                 schedule.name
               );
-              expect(mockExec).toHaveBeenCalledWith(
+              expect(mockExec).toHaveBeenNthCalledWith(
+                index + 1,
                 `launchctl bootout gui/$(id -u)/${getPlistLabel(schedule.name)}`
               );
             });
@@ -492,9 +495,12 @@ describe("InteractiveMode", () => {
 
             await interactiveMode.run();
 
-            expect(logger.error).toHaveBeenCalledWith(
-              `Failed to delete schedule '${schedules[0].name}'. Aborting.`
-            );
+            schedules.forEach((schedule, index) => {
+              expect(logger.error).toHaveBeenNthCalledWith(
+                index + 1,
+                `Schedule '${schedule.name}' does not exist.`
+              );
+            });
           }
         );
       });
