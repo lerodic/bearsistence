@@ -154,8 +154,11 @@ abstract class Mode {
 
     for (const schedule of this.scheduleService.schedules) {
       try {
+        const id = this.generatePlistLabel(schedule.name);
+
         await this.removeSchedulePlistFile(schedule.name);
         await this.scheduleService.remove(schedule.name);
+        this.unloadLaunchDaemon(id);
       } catch {
         return this.logger.error(
           `Failed to delete schedule '${schedule.name}'. Aborting.`
