@@ -571,7 +571,7 @@ describe("CommandMode", () => {
             await commandMode.run();
 
             expect(logger.error).toHaveBeenCalledWith(
-              `Failed to delete schedule '${name}'`
+              `Failed to delete schedule '${name}'.`
             );
             expect(scheduleService.remove).not.toHaveBeenCalled();
             expect(logger.success).not.toHaveBeenCalled();
@@ -600,7 +600,7 @@ describe("CommandMode", () => {
             await commandMode.run();
 
             expect(logger.error).toHaveBeenCalledWith(
-              `Failed to delete schedule '${schedules[0].name}'. Aborting.`
+              `Schedule '${schedules[0].name}' does not exist.`
             );
           }
         );
@@ -637,17 +637,20 @@ describe("CommandMode", () => {
             Object.defineProperty(scheduleService, "schedules", {
               get: jest.fn(() => schedules),
             });
+            scheduleService.doesScheduleExist.mockReturnValue(true);
             mockJoin.mockReturnValue("");
             mockUnlink.mockResolvedValue(undefined);
 
             await commandMode.run();
 
-            schedules.forEach((schedule) => {
+            schedules.forEach((schedule, index) => {
               expect(mockUnlink).toHaveBeenCalled();
-              expect(scheduleService.remove).toHaveBeenCalledWith(
+              expect(scheduleService.remove).toHaveBeenNthCalledWith(
+                index + 1,
                 schedule.name
               );
-              expect(mockExec).toHaveBeenCalledWith(
+              expect(mockExec).toHaveBeenNthCalledWith(
+                index + 1,
                 `launchctl bootout gui/$(id -u)/${getPlistLabel(schedule.name)}`
               );
             });
