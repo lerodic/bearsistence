@@ -4,10 +4,22 @@ import {
   plistFilesForDailySchedule,
   plistFilesForHourlySchedule,
   plistFilesForWeeklySchedule,
+  scriptPath,
 } from "./fixtures/PlistGenerator.fixtures";
+import path from "path";
+
+jest.mock("path");
 
 describe("PlistGenerator", () => {
   let plistGenerator: PlistGenerator;
+
+  beforeEach(() => {
+    jest.spyOn(path, "join").mockReturnValue(scriptPath);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   describe("generate", () => {
     it.each(plistFilesForWeeklySchedule)(

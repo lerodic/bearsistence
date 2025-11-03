@@ -1,5 +1,8 @@
 import { BackupSchedule } from "../../src/types";
 
+export const scriptPath =
+  "/Users/dani/Documents/Development/GitHub/bearsistence/src/scripts/backup-all.applescript";
+
 export const plistFilesForDailySchedule = [
   {
     schedule: {
@@ -12,7 +15,7 @@ export const plistFilesForDailySchedule = [
     },
     expected: preparePlistForDailySchedule(
       "com.bearsistence.test",
-      "/Users/dani/Documents/Development/GitHub/bearsistence/src/scripts/backup-all.applescript",
+      scriptPath,
       2,
       0
     ),
@@ -28,7 +31,7 @@ export const plistFilesForDailySchedule = [
     },
     expected: preparePlistForDailySchedule(
       "com.bearsistence.test",
-      "/Users/dani/Documents/Development/GitHub/bearsistence/src/scripts/backup-all.applescript",
+      scriptPath,
       8,
       25
     ),
@@ -44,7 +47,7 @@ export const plistFilesForDailySchedule = [
     },
     expected: preparePlistForDailySchedule(
       "com.bearsistence.test",
-      "/Users/dani/Documents/Development/GitHub/bearsistence/src/scripts/backup-all.applescript",
+      scriptPath,
       0,
       58
     ),
@@ -98,7 +101,7 @@ export const plistFilesForWeeklySchedule = [
     },
     expected: preparePlistForWeeklySchedule(
       "com.bearsistence.test",
-      "/Users/dani/Documents/Development/GitHub/bearsistence/src/scripts/backup-all.applescript",
+      scriptPath,
       0,
       2,
       0
@@ -116,7 +119,7 @@ export const plistFilesForWeeklySchedule = [
     },
     expected: preparePlistForWeeklySchedule(
       "com.bearsistence.test",
-      "/Users/dani/Documents/Development/GitHub/bearsistence/src/scripts/backup-all.applescript",
+      scriptPath,
       4,
       12,
       50
@@ -134,7 +137,7 @@ export const plistFilesForWeeklySchedule = [
     },
     expected: preparePlistForWeeklySchedule(
       "com.bearsistence.test",
-      "/Users/dani/Documents/Development/GitHub/bearsistence/src/scripts/backup-all.applescript",
+      scriptPath,
       6,
       19,
       44
@@ -191,7 +194,7 @@ export const plistFilesForHourlySchedule = [
     interval: generateIntervalDescription(10),
     expected: preparePlistForHourlySchedule(
       "com.bearsistence.test",
-      "/Users/dani/Documents/Development/GitHub/bearsistence/src/scripts/backup-all.applescript",
+      scriptPath,
       36000
     ),
   },
@@ -207,7 +210,7 @@ export const plistFilesForHourlySchedule = [
     interval: generateIntervalDescription(1),
     expected: preparePlistForHourlySchedule(
       "com.bearsistence.test",
-      "/Users/dani/Documents/Development/GitHub/bearsistence/src/scripts/backup-all.applescript",
+      scriptPath,
       3600
     ),
   },
@@ -223,7 +226,7 @@ export const plistFilesForHourlySchedule = [
     interval: generateIntervalDescription(5),
     expected: preparePlistForHourlySchedule(
       "com.bearsistence.test",
-      "/Users/dani/Documents/Development/GitHub/bearsistence/src/scripts/backup-all.applescript",
+      scriptPath,
       18000
     ),
   },
